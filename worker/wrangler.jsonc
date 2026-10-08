@@ -21,7 +21,13 @@
 	// in src/index.ts for why these two IDs differ in the first place.
 	"vars": {
 		"CHROME_EXTENSION_ID": "fcjbgobfppjggabcbbnngehhefllbllm,anejamjbmgpekamgljajekmgnbppnjao"
-	}
+	},
+    "d1_databases": [
+    {
+      "binding": "USER_SETTINGS",
+      "database_id": "b8ac67e2-91a3-401f-9677-1180160f2995"
+    }
+  ]
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

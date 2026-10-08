@@ -48,6 +48,19 @@ Found a bug or have a feature request? [Open an issue](https://github.com/Nikita
 
 > **Note (WIP):** in-app errors aren't surfaced to the user yet — they only go to the extension's console (`console.error`). Planned: a visible error banner that also prints `browser.runtime.id`, so a bug screenshot alone is enough to tell which build (dev vs. Chrome Web Store vs. Firefox) reported it. See `TODO.md`.
 
+
+## Local development
+
+After cloning the repository, create `worker/.dev.vars`
+(the file is gitignored and is not included in the repository).
+
+Required local secrets:
+
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+
+Use the same values configured as Production secrets in Cloudflare.
+
 ## Contributing
 
 Pull requests are welcome! If you'd like to help improve Twitch Radar, feel free to fork the repo and submit a PR.

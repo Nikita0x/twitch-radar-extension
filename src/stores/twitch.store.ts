@@ -7,354 +7,361 @@ import { fetchFollowedLiveStreams } from '@/services/twitch-api';
 import { CLIENT_ID } from '@/constants';
 import { request, type Result, ok, err } from '@/types/result';
 import { performOAuth } from '@/services/auth.service';
+import { syncSettings } from '@/services/cloudflare.service';
+import { useUserSettingsStore } from './user-settings.store';
 
 interface TwitchUser {
-	id: string;
-	created_at: string;
-	display_name: string;
-	description: string;
-	broadcaster_type: string;
-	profile_image_url: string;
-	offline_image_url: string;
-	type: string;
-	login: string;
-	view_count: number;
+    id: string;
+    created_at: string;
+    display_name: string;
+    description: string;
+    broadcaster_type: string;
+    profile_image_url: string;
+    offline_image_url: string;
+    type: string;
+    login: string;
+    view_count: number;
 }
 
 export interface FollowData {
-	game_id: string;
-	game_name: string;
-	id: string;
-	is_mature: boolean;
-	language: string;
-	started_at: string;
-	tag_ids: [];
-	tags: string[];
-	thumbnail_url: string;
-	title: string;
-	type: string;
-	user_id: string;
-	user_login: string;
-	user_name: string;
-	viewer_count: number;
+    game_id: string;
+    game_name: string;
+    id: string;
+    is_mature: boolean;
+    language: string;
+    started_at: string;
+    tag_ids: [];
+    tags: string[];
+    thumbnail_url: string;
+    title: string;
+    type: string;
+    user_id: string;
+    user_login: string;
+    user_name: string;
+    viewer_count: number;
 }
 
 export interface StreamersDetails {
-	broadcaster_type: string;
-	created_at: string;
-	description: string;
-	display_name: string;
-	id: string;
-	login: string;
-	offline_image_url: string;
-	profile_image_url: string;
-	type: string;
-	view_count: number;
+    broadcaster_type: string;
+    created_at: string;
+    description: string;
+    display_name: string;
+    id: string;
+    login: string;
+    offline_image_url: string;
+    profile_image_url: string;
+    type: string;
+    view_count: number;
 }
 
 export const useTwitchStore = defineStore('twitch', () => {
-	const accessToken = ref<string | null>(null);
-	const user = ref<TwitchUser | null>(null);
-	const loading = ref(false);
-	const error = ref<string | null>(null);
-	const followedLiveStreams = ref<FollowData[]>([]);
-	const followedAllStreams = ref<StreamersDetails[]>([]);
+    const accessToken = ref<string | null>(null);
+    const user = ref<TwitchUser | null>(null);
+    const loading = ref(false);
+    const error = ref<string | null>(null);
+    const followedLiveStreams = ref<FollowData[]>([]);
+    const followedAllStreams = ref<StreamersDetails[]>([]);
 
-	const isAuthenticated = computed(() => !!accessToken.value);
+    const userSettinsStore = useUserSettingsStore();
 
-	async function fetchUserProfile(token: string): Promise<Result<TwitchUser>> {
-		const result = await request<{ data: TwitchUser[] }>('https://api.twitch.tv/helix/users', {
-			headers: {
-				'Client-ID': CLIENT_ID,
-				Authorization: `Bearer ${token}`,
-			},
-		});
+    const isAuthenticated = computed(() => !!accessToken.value);
 
-		if (!result.ok) {
-			console.error(result.error.status);
-			return err(result.error);
-		}
+    async function fetchUserProfile(token: string): Promise<Result<TwitchUser>> {
+        const result = await request<{ data: TwitchUser[] }>('https://api.twitch.tv/helix/users', {
+            headers: {
+                'Client-ID': CLIENT_ID,
+                Authorization: `Bearer ${token}`,
+            },
+        });
 
-		const user = result.data.data[0];
-		if (!user) {
-			return { ok: false, error: { status: 0, message: 'User not found' } };
-		}
+        if (!result.ok) {
+            console.error(result.error.status);
+            return err(result.error);
+        }
 
-		return ok(user);
-	}
+        const user = result.data.data[0];
+        if (!user) {
+            return { ok: false, error: { status: 0, message: 'User not found' } };
+        }
 
-	async function fetchAllFollowedChannelsIds(token: string): Promise<Result<string[]>> {
-		error.value = null;
+        return ok(user);
+    }
 
-		if (!user.value) {
-			const getUserProfileResult = await fetchUserProfile(token);
+    async function fetchAllFollowedChannelsIds(token: string): Promise<Result<string[]>> {
+        error.value = null;
 
-			if (!getUserProfileResult.ok) {
-				console.error(getUserProfileResult.error);
-				return getUserProfileResult;
-			}
+        if (!user.value) {
+            const getUserProfileResult = await fetchUserProfile(token);
 
-			user.value = getUserProfileResult.data;
-		}
+            if (!getUserProfileResult.ok) {
+                console.error(getUserProfileResult.error);
+                return getUserProfileResult;
+            }
 
-		const allIds: string[] = [];
-		let cursor: string | undefined;
+            user.value = getUserProfileResult.data;
+        }
 
-		do {
-			const url = new URL('https://api.twitch.tv/helix/channels/followed');
-			url.searchParams.set('user_id', user.value.id);
-			url.searchParams.set('first', '100');
-			if (cursor) {
-				url.searchParams.set('after', cursor);
-			}
+        const allIds: string[] = [];
+        let cursor: string | undefined;
 
-			const result = await request<{
-				data: {
-					broadcaster_id: string;
-					broadcaster_login: string;
-					broadcaster_name: string;
-					followed_at: string;
-				}[];
-				pagination: {
-					cursor: string;
-				};
-				total: number;
-			}>(url.toString(), {
-				headers: {
-					'Client-ID': CLIENT_ID,
-					Authorization: `Bearer ${token}`,
-				},
-			});
+        do {
+            const url = new URL('https://api.twitch.tv/helix/channels/followed');
+            url.searchParams.set('user_id', user.value.id);
+            url.searchParams.set('first', '100');
+            if (cursor) {
+                url.searchParams.set('after', cursor);
+            }
 
-			if (!result.ok) {
-				console.error(result.error);
-				return result;
-			}
+            const result = await request<{
+                data: {
+                    broadcaster_id: string;
+                    broadcaster_login: string;
+                    broadcaster_name: string;
+                    followed_at: string;
+                }[];
+                pagination: {
+                    cursor: string;
+                };
+                total: number;
+            }>(url.toString(), {
+                headers: {
+                    'Client-ID': CLIENT_ID,
+                    Authorization: `Bearer ${token}`,
+                },
+            });
 
-			allIds.push(...result.data.data.map((item) => item.broadcaster_id));
-			cursor = result.data.pagination.cursor;
-		} while (cursor);
+            if (!result.ok) {
+                console.error(result.error);
+                return result;
+            }
 
-		return ok(allIds);
-	}
+            allIds.push(...result.data.data.map((item) => item.broadcaster_id));
+            cursor = result.data.pagination.cursor;
+        } while (cursor);
 
-	async function fetchDetailsAboutStreamers(
-		token: string,
-		ids: string[]
-	): Promise<Result<StreamersDetails[]>> {
-		error.value = null;
+        return ok(allIds);
+    }
 
-		const allDetails: StreamersDetails[] = [];
+    async function fetchDetailsAboutStreamers(
+        token: string,
+        ids: string[]
+    ): Promise<Result<StreamersDetails[]>> {
+        error.value = null;
 
-		for (let i = 0; i < ids.length; i += 100) {
-			const batch = ids.slice(i, i + 100);
-			const query = batch.map((id) => `id=${id}`).join('&');
+        const allDetails: StreamersDetails[] = [];
 
-			const result = await request<{ data: StreamersDetails[] }>(
-				`https://api.twitch.tv/helix/users?${query}`,
-				{
-					headers: {
-						'Client-ID': CLIENT_ID,
-						Authorization: `Bearer ${token}`,
-					},
-				}
-			);
+        for (let i = 0; i < ids.length; i += 100) {
+            const batch = ids.slice(i, i + 100);
+            const query = batch.map((id) => `id=${id}`).join('&');
 
-			if (!result.ok) {
-				console.error(result.error);
-				return result;
-			}
+            const result = await request<{ data: StreamersDetails[] }>(
+                `https://api.twitch.tv/helix/users?${query}`,
+                {
+                    headers: {
+                        'Client-ID': CLIENT_ID,
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
-			allDetails.push(...result.data.data);
-		}
+            if (!result.ok) {
+                console.error(result.error);
+                return result;
+            }
 
-		return ok(allDetails);
-	}
+            allDetails.push(...result.data.data);
+        }
 
-	async function loginWithTwitch() {
-		loading.value = true;
-		error.value = null;
-		try {
-			const redirectUri = browser.identity.getRedirectURL();
-			const authUrl =
-				`https://id.twitch.tv/oauth2/authorize` +
-				`?client_id=${CLIENT_ID}` +
-				`&redirect_uri=${encodeURIComponent(redirectUri)}` +
-				`&response_type=token` +
-				`&scope=user:read:follows`;
+        return ok(allDetails);
+    }
 
-			const oauthRedirectUrl = await performOAuth(authUrl);
-			const token = extractTokenFromUrl(oauthRedirectUrl);
-			if (!token) {
-				throw new Error('Токен доступа не найден в URL редиректа');
-			}
+    async function loginWithTwitch() {
+        loading.value = true;
+        error.value = null;
+        try {
+            const redirectUri = browser.identity.getRedirectURL();
+            const authUrl =
+                `https://id.twitch.tv/oauth2/authorize` +
+                `?client_id=${CLIENT_ID}` +
+                `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+                `&response_type=token` +
+                `&scope=user:read:follows`;
 
-			accessToken.value = token;
+            const oauthRedirectUrl = await performOAuth(authUrl);
+            const token = extractTokenFromUrl(oauthRedirectUrl);
+            if (!token) {
+                throw new Error('Токен доступа не найден в URL редиректа');
+            }
 
-			const getUserProfileResult = await fetchUserProfile(token);
+            accessToken.value = token;
 
-			if (!getUserProfileResult.ok) {
-				console.error(getUserProfileResult.error);
-				return getUserProfileResult;
-			}
+            const getUserProfileResult = await fetchUserProfile(token);
 
-			user.value = getUserProfileResult.data;
+            if (!getUserProfileResult.ok) {
+                console.error(getUserProfileResult.error);
+                return getUserProfileResult;
+            }
 
-			await saveAuth({
-				accessToken: token,
-				isAuthenticated: true,
-				userId: user.value.id,
-			});
+            user.value = getUserProfileResult.data;
 
-			const fetchFollowedLiveStreamsResult = await fetchFollowedLiveStreams(token, user.value.id);
+            await saveAuth({
+                accessToken: token,
+                isAuthenticated: true,
+                userId: user.value.id,
+            });
 
-			if (!fetchFollowedLiveStreamsResult.ok) {
-				console.error(fetchFollowedLiveStreamsResult.error);
-				return fetchFollowedLiveStreamsResult;
-			}
+            await syncSettings(user.value.id);
+            await userSettinsStore.loadSettings()
 
-			followedLiveStreams.value = fetchFollowedLiveStreamsResult.data;
-			await persistLiveStreams(followedLiveStreams.value);
+            const fetchFollowedLiveStreamsResult = await fetchFollowedLiveStreams(token, user.value.id);
 
-			const idsResult = await fetchAllFollowedChannelsIds(token);
+            if (!fetchFollowedLiveStreamsResult.ok) {
+                console.error(fetchFollowedLiveStreamsResult.error);
+                return fetchFollowedLiveStreamsResult;
+            }
 
-			if (!idsResult.ok) {
-				console.error(idsResult.error);
-				return idsResult;
-			}
+            followedLiveStreams.value = fetchFollowedLiveStreamsResult.data;
+            await persistLiveStreams(followedLiveStreams.value);
 
-			const fetchDetailsAboutStreamersResult = await fetchDetailsAboutStreamers(
-				token,
-				idsResult.data
-			);
+            const idsResult = await fetchAllFollowedChannelsIds(token);
 
-			if (!fetchDetailsAboutStreamersResult.ok) {
-				console.error(fetchDetailsAboutStreamersResult.error);
-				return fetchDetailsAboutStreamersResult;
-			}
+            if (!idsResult.ok) {
+                console.error(idsResult.error);
+                return idsResult;
+            }
 
-			followedAllStreams.value = fetchDetailsAboutStreamersResult.data;
-		} catch (err) {
-			const message = err instanceof Error ? err.message : String(err);
-			if (message.includes('canceled') || message.includes('cancelled')) {
-				console.log('Authorization declined by user.');
-			} else {
-				error.value = `Authorization error: ${message}`;
-			}
-		} finally {
-			loading.value = false;
-		}
-	}
+            const fetchDetailsAboutStreamersResult = await fetchDetailsAboutStreamers(
+                token,
+                idsResult.data
+            );
 
-	async function logout() {
-		await saveAuth({ accessToken: '', isAuthenticated: false, userId: '' });
+            if (!fetchDetailsAboutStreamersResult.ok) {
+                console.error(fetchDetailsAboutStreamersResult.error);
+                return fetchDetailsAboutStreamersResult;
+            }
 
-		accessToken.value = null;
-		user.value = null;
-		followedLiveStreams.value = [];
-		followedAllStreams.value = [];
-		error.value = null;
-		loading.value = false;
-	}
+            followedAllStreams.value = fetchDetailsAboutStreamersResult.data;
+        } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            if (message.includes('canceled') || message.includes('cancelled')) {
+                console.log('Authorization declined by user.');
+            } else {
+                error.value = `Authorization error: ${message}`;
+            }
+        } finally {
+            loading.value = false;
+        }
+    }
 
-	async function init() {
-		listenStorageChanges();
-		loading.value = true;
-		try {
-			const auth = await getAuth();
+    async function logout() {
+        await saveAuth({ accessToken: '', isAuthenticated: false, userId: '' });
 
-			if (auth.accessToken) {
-				accessToken.value = auth.accessToken;
+        accessToken.value = null;
+        user.value = null;
+        followedLiveStreams.value = [];
+        followedAllStreams.value = [];
+        error.value = null;
+        loading.value = false;
+    }
 
-				const getUserProfileResult = await fetchUserProfile(accessToken.value);
+    async function init() {
+        listenStorageChanges();
+        loading.value = true;
+        try {
+            const auth = await getAuth();
 
-				if (!getUserProfileResult.ok) {
-					console.error(getUserProfileResult.error);
-					return getUserProfileResult;
-				}
+            if (auth.accessToken) {
+                accessToken.value = auth.accessToken;
 
-				user.value = getUserProfileResult.data;
+                const getUserProfileResult = await fetchUserProfile(accessToken.value);
 
-				const fetchFollowedLiveStreamsResult = await fetchFollowedLiveStreams(
-					accessToken.value,
-					user.value.id
-				);
+                if (!getUserProfileResult.ok) {
+                    console.error(getUserProfileResult.error);
+                    return getUserProfileResult;
+                }
 
-				if (!fetchFollowedLiveStreamsResult.ok) {
-					console.error(fetchFollowedLiveStreamsResult.error);
-					return fetchFollowedLiveStreamsResult;
-				}
+                user.value = getUserProfileResult.data;
 
-				followedLiveStreams.value = fetchFollowedLiveStreamsResult.data;
-				await persistLiveStreams(followedLiveStreams.value);
+                const fetchFollowedLiveStreamsResult = await fetchFollowedLiveStreams(
+                    accessToken.value,
+                    user.value.id
+                );
 
-				const idsResult = await fetchAllFollowedChannelsIds(accessToken.value);
+                if (!fetchFollowedLiveStreamsResult.ok) {
+                    console.error(fetchFollowedLiveStreamsResult.error);
+                    return fetchFollowedLiveStreamsResult;
+                }
 
-				if (!idsResult.ok) {
-					console.error(idsResult.error);
-					return idsResult;
-				}
+                followedLiveStreams.value = fetchFollowedLiveStreamsResult.data;
+                await persistLiveStreams(followedLiveStreams.value);
 
-				const getDetailsAboutStreamersResult = await fetchDetailsAboutStreamers(
-					accessToken.value,
-					idsResult.data
-				);
+                const idsResult = await fetchAllFollowedChannelsIds(accessToken.value);
 
-				if (!getDetailsAboutStreamersResult.ok) {
-					console.error(getDetailsAboutStreamersResult.error);
-					return getDetailsAboutStreamersResult;
-				}
+                if (!idsResult.ok) {
+                    console.error(idsResult.error);
+                    return idsResult;
+                }
 
-				followedAllStreams.value = getDetailsAboutStreamersResult.data;
-			} else {
-				accessToken.value = null;
-				user.value = null;
-				followedLiveStreams.value = [];
-			}
-		} catch (err) {
-			const message = err instanceof Error ? err.message : String(err);
-			error.value = message;
-		} finally {
-			loading.value = false;
-		}
-	}
+                const getDetailsAboutStreamersResult = await fetchDetailsAboutStreamers(
+                    accessToken.value,
+                    idsResult.data
+                );
 
-	async function persistLiveStreams(streams: FollowData[]) {
-		const runtime = await getRuntime();
-		runtime.liveStreams = streams;
-		await saveRuntime(runtime);
-	}
+                if (!getDetailsAboutStreamersResult.ok) {
+                    console.error(getDetailsAboutStreamersResult.error);
+                    return getDetailsAboutStreamersResult;
+                }
 
-	function listenStorageChanges() {
-		browser.storage.onChanged.addListener((changes) => {
-			const newRuntime = changes.runtime?.newValue as RuntimeState | undefined;
-			if (Array.isArray(newRuntime?.liveStreams)) {
-				followedLiveStreams.value = newRuntime.liveStreams;
-			}
-		});
-	}
+                followedAllStreams.value = getDetailsAboutStreamersResult.data;
+            } else {
+                accessToken.value = null;
+                user.value = null;
+                followedLiveStreams.value = [];
+            }
+        } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            error.value = message;
+        } finally {
+            loading.value = false;
+        }
+    }
 
-	watch(followedLiveStreams, async () => {
-		if (!isAuthenticated.value) {
-			await setBadge('!', '#808080');
-		} else {
-			await setBadge(String(followedLiveStreams.value.length), '#EB0400', 'white');
-		}
-	});
+    async function persistLiveStreams(streams: FollowData[]) {
+        const runtime = await getRuntime();
+        runtime.liveStreams = streams;
+        await saveRuntime(runtime);
+    }
 
-	return {
-		accessToken,
-		user,
-		loading,
-		error,
-		followedLiveStreams,
-		followedAllStreams,
-		isAuthenticated,
+    function listenStorageChanges() {
+        browser.storage.onChanged.addListener((changes) => {
+            const newRuntime = changes.runtime?.newValue as RuntimeState | undefined;
+            if (Array.isArray(newRuntime?.liveStreams)) {
+                followedLiveStreams.value = newRuntime.liveStreams;
+            }
+        });
+    }
 
-		loginWithTwitch,
-		logout,
-		init,
-		fetchAllFollowedChannelsIds,
-		fetchDetailsAboutStreamers,
-	};
+    watch(followedLiveStreams, async () => {
+        if (!isAuthenticated.value) {
+            await setBadge('!', '#808080');
+        } else {
+            await setBadge(String(followedLiveStreams.value.length), '#EB0400', 'white');
+        }
+    });
+
+    return {
+        accessToken,
+        user,
+        loading,
+        error,
+        followedLiveStreams,
+        followedAllStreams,
+        isAuthenticated,
+
+        loginWithTwitch,
+        logout,
+        init,
+        fetchAllFollowedChannelsIds,
+        fetchDetailsAboutStreamers,
+    };
 });
