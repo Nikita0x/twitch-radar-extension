@@ -1,6 +1,6 @@
 <template>
 	<div
-		class="twitch-auth"
+		class="twitch-auth custom-scrollbar"
 		ref="scrollContainer"
 		@scroll="
 			(event) => {
@@ -176,24 +176,6 @@ onMounted(() => {
 
 	background: var(--color-bg);
 	overflow: auto;
-	scrollbar-color: var(--color-text-dim) transparent;
-}
-
-.twitch-auth::-webkit-scrollbar {
-	width: 6px;
-}
-
-.twitch-auth::-webkit-scrollbar-track {
-	background: transparent;
-}
-
-.twitch-auth::-webkit-scrollbar-thumb {
-	background: var(--color-text-dim);
-	border-radius: 3px;
-}
-
-.twitch-auth::-webkit-scrollbar-thumb:hover {
-	background: var(--color-text-muted);
 }
 
 .setting-row {

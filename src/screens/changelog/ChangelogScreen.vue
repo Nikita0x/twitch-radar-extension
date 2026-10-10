@@ -1,5 +1,5 @@
 <template>
-    <div class="changelog-container">
+    <div class="changelog-container custom-scrollbar">
         <div class="tabs">
             <button class="tab" :class="{ active: activeTab === 'changelog' }" @click="activeTab = 'changelog'">
                 Changelog
@@ -200,24 +200,6 @@ const IDEAS: ChangelogItem[] = [
     padding: 16px;
     overflow: auto;
     height: 100%;
-    scrollbar-color: var(--color-text-dim) transparent;
-}
-
-.changelog-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.changelog-container::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.changelog-container::-webkit-scrollbar-thumb {
-    background: var(--color-text-dim);
-    border-radius: 3px;
-}
-
-.changelog-container::-webkit-scrollbar-thumb:hover {
-    background: var(--color-text-muted);
 }
 
 .tabs {

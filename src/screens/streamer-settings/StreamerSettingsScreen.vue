@@ -1,5 +1,5 @@
 <template>
-	<div class="streamer-settings">
+	<div class="streamer-settings custom-scrollbar">
 		<div v-if="selectedStreamer" class="settings-content">
 			<!-- Streamer header -->
 			<div class="streamer-header">

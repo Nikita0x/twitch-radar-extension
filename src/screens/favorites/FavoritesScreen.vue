@@ -1,5 +1,5 @@
 <template>
-	<div class="state-shell">
+	<div class="state-shell custom-scrollbar">
 		<div
 			v-if="isAuthenticated && currentScreen === 'favorites'"
 			style="display: flex; padding-inline: 5px"
@@ -144,24 +144,6 @@ watch(inputRef, (input) => {
 	position: relative;
 	overflow: auto;
 
-	scrollbar-color: var(--color-text-dim) transparent;
-}
-
-.state-shell::-webkit-scrollbar {
-	width: 6px;
-}
-
-.state-shell::-webkit-scrollbar-track {
-	background: transparent;
-}
-
-.state-shell::-webkit-scrollbar-thumb {
-	background: var(--color-text-dim);
-	border-radius: 3px;
-}
-
-.state-shell::-webkit-scrollbar-thumb:hover {
-	background: var(--color-text-muted);
 }
 
 .empty-state {
