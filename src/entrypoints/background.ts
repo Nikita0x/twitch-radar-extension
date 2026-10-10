@@ -163,7 +163,9 @@ export default defineBackground(() => {
 		try {
 			await browser.notifications.create(stream.user_login, {
 				type: 'basic',
-				iconUrl: `${browser.runtime.getURL('/')}icon128.png`,
+				iconUrl: browser.runtime.getURL(
+					import.meta.env.COMMAND === 'serve' ? '/dev/icon128.png' : '/icon128.png'
+				),
 				title,
 				message,
 				// Firefox throws "Unexpected property" if these are present -

@@ -10,6 +10,13 @@ import { defineConfig } from 'wxt';
 const CHROMIUM_DEV_PUBLIC_KEY =
 	'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4YPqMhtV7dM6KFBdD1izLvwlxglCRGaNDVdNTwKXk6O2lAYqOc+bmeFddSVry/kdwuappyVxvtPvmdr1ssja4+6NIxwRuBGuW1+dwdHGNCLBuUu8vgbs9WsIJKiyi1i8N68Bc9hLYpol6bcxKg12ZBvsW/GWLauei3cTDnk+XOOw3WQRIiwRjOel2eMQBc+1YtsfSAFbC6+oijOUZrBvxFh6xhtFZm6XzzYkNhzp7MVyLi+jLLEH+1qMPqs0oi/zWYBTSswolPl+YEEGXEzFZX+ugPDz1EoOLK3vF1rO7PKra5nq1QMTQMkKk11eAK/ByFLuP2XkFhJHJKmduvj6owIDAQAB';
 
+// Dev-server builds use color-inverted copies (src/public/dev/) so an unpacked
+// dev install is easy to tell apart from the store install.
+function icons(command: 'build' | 'serve', sizes: number[]) {
+	const dir = command === 'serve' ? 'dev/' : '';
+	return Object.fromEntries(sizes.map((size) => [size, `${dir}icon${size}.png`]));
+}
+
 // See https://wxt.dev/api/config.html
 export default defineConfig({
 	srcDir: 'src',
@@ -22,23 +29,24 @@ export default defineConfig({
 	alias: {
 		'@shared': resolve(__dirname, 'shared'),
 	},
+	hooks: {
+		// The hook's return value is ignored — the array has to be mutated in place.
+		'build:publicAssets': (wxt, files) => {
+			if (wxt.config.command !== 'build') return;
+
+			const prodFiles = files.filter((file) => !file.relativeDest.startsWith('dev/'));
+			files.splice(0, files.length, ...prodFiles);
+		},
+	},
 	manifest: ({ browser, command }) => ({
 		name: 'Twitch Radar – Live Stream Notifications',
 		description: 'Get desktop notifications when your favorite Twitch streamers go live.',
 		version: '1.6.0',
 		permissions: ['notifications', 'identity', 'storage', 'alarms'],
 		host_permissions: ['https://api.twitch.tv/*'],
-		icons: {
-			16: 'icon16.png',
-			32: 'icon32.png',
-			48: 'icon48.png',
-			128: 'icon128.png',
-		},
+		icons: icons(command, [16, 32, 48, 128]),
 		action: {
-			default_icon: {
-				16: 'icon16.png',
-				32: 'icon32.png',
-			},
+			default_icon: icons(command, [16, 32]),
 		},
 		// Pins the Chrome extension ID to anejamjbmgpekamgljajekmgnbppnjao,
 		// independent of the build's absolute path. Dev-server only (`command
