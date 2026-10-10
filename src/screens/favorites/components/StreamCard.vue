@@ -1,6 +1,6 @@
 <template>
 	<a
-		:href="`https://twitch.com/${props.stream.user_login}`"
+		:href="`https://twitch.tv/${props.stream.user_login}`"
 		target="_blank"
 		rel="noopener noreferrer"
 		class="card"
@@ -53,6 +53,12 @@
 				</div>
 
 				<span class="uptime">
+					<span
+						v-if="isNew"
+						class="new-badge"
+						:title="`Went live less than ${NEW_STREAM_THRESHOLD_MINUTES} minutes ago`"
+						>New</span
+					>
 					<!-- <span style="transform: translateY(1px); display: inline-block">🕒</span> -->
 					{{ formatUptime(props.stream.started_at) }}</span
 				>
@@ -62,9 +68,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import type { FollowData } from '@/stores/twitch.store';
-import { formatUptime, getPreview } from '@/utils/utils';
+import { formatUptime, getPreview, isNewStream } from '@/utils/utils';
+import { NEW_STREAM_THRESHOLD_MINUTES } from '@/constants';
 import AnimatedViewCount from '@/components/AnimatedViewCount.vue';
 import { storeToRefs } from 'pinia';
 
@@ -84,6 +91,7 @@ const { userSettingsState } = storeToRefs(userSettingsStore);
 const { storage } = storeToRefs(storageStore);
 
 const imageLoaded = ref(false);
+const isNew = computed(() => isNewStream(props.stream.started_at));
 
 watch(
 	() => storage.value.runtime.previewTick,
@@ -224,7 +232,19 @@ watch(
 .uptime {
 	display: flex;
 	align-items: center;
+	gap: 6px;
 	color: var(--color-text);
+}
+
+.new-badge {
+	font-size: 10px;
+	font-weight: 700;
+	padding: 2px 6px;
+	border-radius: 4px;
+	text-transform: uppercase;
+	background: var(--color-red);
+	color: white;
+	cursor: help;
 }
 
 .thumb-skeleton {

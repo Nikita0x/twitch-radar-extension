@@ -1,4 +1,5 @@
 import { getStreamerNotifications, type UserSettings } from '@/services/storage.service';
+import { NEW_STREAM_THRESHOLD_MINUTES } from '@/constants';
 
 export function formatUptime(startedAt: string) {
 	const started = new Date(startedAt);
@@ -11,6 +12,12 @@ export function formatUptime(startedAt: string) {
 		return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
 	}
 	return `${minutes}m`;
+}
+
+export function isNewStream(startedAt: string) {
+	const diffMs = Date.now() - new Date(startedAt).getTime();
+
+	return diffMs < NEW_STREAM_THRESHOLD_MINUTES * 60 * 1000;
 }
 
 export function formatDate(dateStr: string) {

@@ -19,7 +19,16 @@ desktop notifications. Real users depend on it — **nothing may break**.
   3. Wait for the owner to confirm the approach. Only then implement.
 - **Teach while doing:** explain *why* (patterns, browser APIs, pitfalls), not
   just *what*. Point out problems in existing code when relevant.
+- **Keep the owner's skills sharp — call out blind vibe-coding.** The owner
+  is afraid of losing programming skills to AI. When they start accepting code
+  without reading it, delegating things they could write themselves, or
+  skipping my questions — say so directly. Prefer: owner writes small features
+  themselves and I review; I give hints before full solutions; ask them to explain
+  a diff in their own words before committing. After each finished feature,
+  give a short honest feedback block (what was good, what to work on).
 - Small, reviewable changes. Run `npm run check` after changes.
+- Formatting: single root `.prettierrc` is the source of truth for the whole
+  repo (including `worker/`); VS Code is pinned to Prettier via `.vscode/settings.json`.
 - Communication with the owner is in Russian; code, comments, and commits in English.
 
 ## Release checklist (remind the owner EVERY release)
