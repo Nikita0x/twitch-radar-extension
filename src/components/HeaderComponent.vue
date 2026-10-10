@@ -1,49 +1,39 @@
 <template>
 	<div class="header">
 		<div class="title">
-			<button
-				v-if="currentScreen === 'settings' || currentScreen === 'changelog'"
-				class="icon-btn back-btn"
-				@click="navigationStore.navigateTo('favorites')"
-				title="Back"
-			>
-				<svg
-					width="20px"
-					height="20px"
-					viewBox="0 0 200 200"
-					fill="currentColor"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path
-						d="M160,89.75H56l53-53a9.67,9.67,0,0,0,0-14,9.67,9.67,0,0,0-14,0l-56,56a30.18,30.18,0,0,0-8.5,18.5c0,1-.5,1.5-.5,2.5a6.34,6.34,0,0,0,.5,3,31.47,31.47,0,0,0,8.5,18.5l56,56a9.9,9.9,0,0,0,14-14l-52.5-53.5H160a10,10,0,0,0,0-20Z"
-					/>
-				</svg>
-			</button>
-			<button
-				v-else-if="currentScreen === 'streamer-settings'"
-				class="icon-btn back-btn"
-				@click="navigationStore.navigateTo('settings')"
-				title="Back"
-			>
-				<svg
-					width="20px"
-					height="20px"
-					viewBox="0 0 200 200"
-					fill="currentColor"
-					xmlns="http://www.w3.org/2000/svg"
-				>
-					<path
-						d="M160,89.75H56l53-53a9.67,9.67,0,0,0,0-14,9.67,9.67,0,0,0-14,0l-56,56a30.18,30.18,0,0,0-8.5,18.5c0,1-.5,1.5-.5,2.5a6.34,6.34,0,0,0,.5,3,31.47,31.47,0,0,0,8.5,18.5l56,56a9.9,9.9,0,0,0,14-14l-52.5-53.5H160a10,10,0,0,0,0-20Z"
-					/>
-				</svg>
-			</button>
+			<template v-if="canGoBack">
+				<button class="icon-btn back-btn" @click="navigationStore.back()" title="Back">
+					<svg
+						width="20px"
+						height="20px"
+						viewBox="0 0 200 200"
+						fill="currentColor"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							d="M160,89.75H56l53-53a9.67,9.67,0,0,0,0-14,9.67,9.67,0,0,0-14,0l-56,56a30.18,30.18,0,0,0-8.5,18.5c0,1-.5,1.5-.5,2.5a6.34,6.34,0,0,0,.5,3,31.47,31.47,0,0,0,8.5,18.5l56,56a9.9,9.9,0,0,0,14-14l-52.5-53.5H160a10,10,0,0,0,0-20Z"
+						/>
+					</svg>
+				</button>
+				<span class="screen-title">{{ SCREEN_TITLES[currentScreen] }}</span>
+			</template>
+			<TabSwitcher
+				v-else-if="isAuthenticated"
+				class="header-tabs"
+				:model-value="activeTab"
+				:tabs="[
+					{ value: 'favorites', label: 'Live', count: followedLiveStreams.length },
+					{ value: 'following', label: 'Following', count: followedAllStreams.length || undefined },
+				]"
+				@update:model-value="navigationStore.switchTab"
+			/>
 			<span v-else class="brand">Twitch Radar</span>
 		</div>
 		<div class="buttons">
 			<!-- <button class="icon-btn heart-btn" title="Favorites"><img src="/heart.svg" width="20" height="20"
                     class="heart-icon" /></button> -->
 			<button
-				v-if="isAuthenticated && currentScreen === 'favorites'"
+				v-if="isAuthenticated && !canGoBack"
 				class="icon-btn heart-btn"
 				title="Changelog"
 				@click="navigationStore.navigateTo('changelog')"
@@ -66,7 +56,7 @@
 				</svg>
 			</button>
 			<button
-				v-if="isAuthenticated && currentScreen === 'favorites'"
+				v-if="isAuthenticated && !canGoBack"
 				class="icon-btn cog-btn"
 				title="Settings"
 				@click="navigationStore.navigateTo('settings')"
@@ -87,35 +77,29 @@
 					/>
 				</svg>
 			</button>
-
-			<div
-				v-else-if="isAuthenticated && currentScreen === 'settings'"
-				style="display: flex; align-items: center; gap: 10px"
-			>
-				<button @click="logout" class="logout-btn">Logout</button>
-
-				<img :src="user?.profile_image_url" style="width: 20px; height: 20px; border-radius: 50%" />
-				<span class="user-name">{{ user?.display_name }}</span>
-			</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { useTwitchStore } from '@/stores/twitch.store';
-import { useNavigationStore } from '@/stores/navigation.store';
+import { useNavigationStore, type Screen } from '@/stores/navigation.store';
 import { storeToRefs } from 'pinia';
+import TabSwitcher from '@/components/TabSwitcher.vue';
+
+const SCREEN_TITLES: Record<Screen, string> = {
+	favorites: 'Live',
+	following: 'Following',
+	settings: 'Settings',
+	'streamer-settings': 'Notification settings',
+	changelog: 'Changelog',
+	testing: 'Testing',
+};
 
 const twitchStore = useTwitchStore();
 const navigationStore = useNavigationStore();
-const { user, isAuthenticated } = storeToRefs(twitchStore);
-const { currentScreen } = storeToRefs(navigationStore);
-const props = defineProps();
-
-async function logout() {
-	await twitchStore.logout();
-	navigationStore.navigateTo('favorites');
-}
+const { isAuthenticated, followedLiveStreams, followedAllStreams } = storeToRefs(twitchStore);
+const { currentScreen, activeTab, canGoBack } = storeToRefs(navigationStore);
 </script>
 
 <style scoped>
@@ -132,6 +116,35 @@ async function logout() {
 	display: flex;
 	align-items: center;
 	color: var(--color-header-text);
+}
+
+.screen-title {
+	font-weight: bold;
+	font-size: 15px;
+	margin-left: 4px;
+}
+
+/*
+ * No transparency on header tab text: white on the light header purple is only
+ * ~4.6:1 at full opacity (WCAG AA needs 4.5), so any fade drops below AA.
+ * Active vs inactive is told apart by the underline alone.
+ */
+.header-tabs {
+	--tabs-bg: transparent;
+	--tab-radius: 0;
+	--tab-color: #fff;
+	--tab-hover-color: #fff;
+	--tab-hover-indicator: rgba(255, 255, 255, 0.4);
+	--tab-active-bg: transparent;
+	--tab-active-color: #fff;
+	--tab-indicator: #fff;
+	--tab-count-opacity: 1;
+}
+
+[data-theme='dark'] .header-tabs {
+	--tab-color: var(--color-text-muted);
+	--tab-hover-indicator: rgba(145, 70, 255, 0.5);
+	--tab-indicator: var(--color-accent);
 }
 
 .brand {
@@ -183,31 +196,5 @@ async function logout() {
 
 .heart-btn:hover .heart-icon {
 	transform: scale(1.1);
-}
-
-.user-avatar {
-	width: 28px;
-	height: 28px;
-	border-radius: 50%;
-	flex-shrink: 0;
-}
-
-.logout-btn {
-	background-color: var(--color-red);
-	color: white;
-	border: none;
-	padding: 5px 10px;
-	border-radius: 4px;
-	cursor: pointer;
-
-	transition: 0.3s ease all;
-}
-
-.logout-btn:hover {
-	filter: brightness(1.2);
-}
-
-.user-name {
-	color: var(--color-header-text);
 }
 </style>

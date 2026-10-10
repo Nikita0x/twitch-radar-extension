@@ -12,6 +12,7 @@
 import HeaderComponent from '@/components/HeaderComponent.vue';
 import ChangelogScreen from '@/screens/changelog/ChangelogScreen.vue';
 import FavoritesScreen from '@/screens/favorites/FavoritesScreen.vue';
+import FollowingScreen from '@/screens/following/FollowingScreen.vue';
 import SettingsScreen from '@/screens/settings/SettingsScreen.vue';
 import StreamerSettingsScreen from '@/screens/streamer-settings/StreamerSettingsScreen.vue';
 import TestingScreen from '@/screens/testing/TestingScreen.vue';
@@ -46,6 +47,7 @@ const screens: Record<Screen, Component> = {
 	changelog: ChangelogScreen,
 	'streamer-settings': StreamerSettingsScreen,
 	favorites: FavoritesScreen,
+	following: FollowingScreen,
 	settings: SettingsScreen,
 	testing: TestingScreen,
 };

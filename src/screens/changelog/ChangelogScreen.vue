@@ -1,13 +1,12 @@
 <template>
     <div class="changelog-container custom-scrollbar">
-        <div class="tabs">
-            <button class="tab" :class="{ active: activeTab === 'changelog' }" @click="activeTab = 'changelog'">
-                Changelog
-            </button>
-            <button class="tab" :class="{ active: activeTab === 'ideas' }" @click="activeTab = 'ideas'">
-                Ideas
-            </button>
-        </div>
+        <TabSwitcher
+            v-model="activeTab"
+            :tabs="[
+                { value: 'changelog', label: 'Changelog' },
+                { value: 'ideas', label: 'Ideas' },
+            ]"
+        />
 
         <template v-if="activeTab === 'changelog'">
             <section v-for="release in CHANGELOG" :key="release.version" class="release">
@@ -45,6 +44,7 @@
 import { ref } from 'vue';
 import type { Component } from 'vue';
 import ChangelogCard from '@/screens/changelog/components/ChangelogCard.vue';
+import TabSwitcher from '@/components/TabSwitcher.vue';
 import LivePreviewDemo from '@/screens/changelog/components/LivePreviewDemo.vue';
 
 const activeTab = ref<'changelog' | 'ideas'>('changelog');
@@ -200,44 +200,6 @@ const IDEAS: ChangelogItem[] = [
     padding: 16px;
     overflow: auto;
     height: 100%;
-}
-
-.tabs {
-    display: flex;
-    gap: 6px;
-
-    padding: 3px;
-
-    background: var(--color-bg-secondary);
-    border-radius: 8px;
-}
-
-.tab {
-    flex: 1;
-
-    padding: 6px 0;
-
-    border: none;
-    border-radius: 6px;
-    background: transparent;
-
-    color: var(--color-text-dim);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-
-    transition:
-        background 0.15s ease,
-        color 0.15s ease;
-}
-
-.tab:hover {
-    color: var(--color-text);
-}
-
-.tab.active {
-    background: var(--color-bg);
-    color: var(--color-accent);
 }
 
 .ideas-disclaimer {

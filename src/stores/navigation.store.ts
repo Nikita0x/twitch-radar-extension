@@ -2,47 +2,59 @@ import type { StreamersDetails } from '@/stores/twitch.store';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
-export type Screen = 'favorites' | 'settings' | 'streamer-settings' | 'changelog' | 'testing';
-
-export interface NavigationState {
-	current: Screen;
-	previous: Screen | null;
-	scrollPositions: Partial<Record<Screen, number>>;
-}
+export type Tab = 'favorites' | 'following';
+export type Screen = Tab | 'settings' | 'streamer-settings' | 'changelog' | 'testing';
 
 export const useNavigationStore = defineStore('navigation', () => {
-	const _state = ref<NavigationState>({
-		current: 'favorites',
-		previous: null,
-		scrollPositions: {},
-	});
+	const stack = ref<Screen[]>(['favorites']);
+	const previousScreen = ref<Screen | null>(null);
+	const scrollPositions = ref<Partial<Record<Screen, number>>>({});
 
 	const selectedStreamer = ref<StreamersDetails | null>(null);
 
-	function navigateTo(screen: Screen) {
-		if (screen === _state.value.current) return;
+	const currentScreen = computed(() => stack.value[stack.value.length - 1]!);
+	const activeTab = computed(() => stack.value[0] as Tab);
+	const canGoBack = computed(() => stack.value.length > 1);
 
-		_state.value.previous = _state.value.current;
-		_state.value.current = screen;
+	function switchTab(tab: Tab) {
+		if (stack.value.length === 1 && activeTab.value === tab) return;
+
+		previousScreen.value = currentScreen.value;
+		stack.value = [tab];
+	}
+
+	function navigateTo(screen: Screen) {
+		if (screen === currentScreen.value) return;
+
+		previousScreen.value = currentScreen.value;
+		stack.value.push(screen);
+	}
+
+	function back() {
+		if (!canGoBack.value) return;
+
+		previousScreen.value = currentScreen.value;
+		stack.value.pop();
 	}
 
 	function saveScrollPosition(screen: Screen, scrollTop: number) {
-		_state.value.scrollPositions[screen] = scrollTop;
+		scrollPositions.value[screen] = scrollTop;
 	}
 
 	function getScrollPosition(screen: Screen) {
-		return _state.value.scrollPositions[screen] ?? 0;
+		return scrollPositions.value[screen] ?? 0;
 	}
-
-	const currentScreen = computed(() => _state.value.current);
-	const previousScreen = computed(() => _state.value.previous);
 
 	return {
 		selectedStreamer,
-		navigateTo,
-		saveScrollPosition,
-		getScrollPosition,
 		currentScreen,
 		previousScreen,
+		activeTab,
+		canGoBack,
+		switchTab,
+		navigateTo,
+		back,
+		saveScrollPosition,
+		getScrollPosition,
 	};
 });
