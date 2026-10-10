@@ -50,11 +50,11 @@ export const useUserSettingsStore = defineStore('user-settings', () => {
     async function syncSettingsToDatabase() {
         const auth = await getAuth();
 
-        if (!auth.isAuthenticated || !auth.userId) {
+        if (!auth.isAuthenticated || !auth.accessToken) {
             return;
         }
 
-        await putUserSettings(auth.userId, userSettingsState.value);
+        await putUserSettings(auth.accessToken, userSettingsState.value);
     }
 
     return {

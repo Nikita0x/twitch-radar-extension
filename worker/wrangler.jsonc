@@ -20,7 +20,10 @@
 	// deployed worker for testing against the real backend). See isAllowedOrigin
 	// in src/index.ts for why these two IDs differ in the first place.
 	"vars": {
-		"CHROME_EXTENSION_ID": "fcjbgobfppjggabcbbnngehhefllbllm,anejamjbmgpekamgljajekmgnbppnjao"
+		"CHROME_EXTENSION_ID": "fcjbgobfppjggabcbbnngehhefllbllm,anejamjbmgpekamgljajekmgnbppnjao",
+		// Twitch app client ID (public, same as CLIENT_ID in src/constants.ts).
+		// /settings only accepts tokens issued to this app — see authenticate().
+		"TWITCH_CLIENT_ID": "cvem7bputjzs04pdh02g96bqb4wrj9"
 	},
     "d1_databases": [
     {

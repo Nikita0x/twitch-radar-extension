@@ -40,8 +40,44 @@ function corsHeaders(origin: string | null, extensionIds: string): HeadersInit {
     return {
         'Access-Control-Allow-Origin': origin,
         'Access-Control-Allow-Methods': 'GET, PUT, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        // Authorization is not a CORS-safelisted header: without it here the
+        // browser's preflight fails and the real /settings request is never sent.
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     };
+}
+
+interface TwitchValidateResponse {
+    client_id: string;
+    login: string;
+    user_id: string;
+    scopes: string[];
+    expires_in: number;
+}
+
+// Resolves who is calling from the Twitch token itself, never from anything
+// else in the request: user_id/Origin are just client-supplied strings (curl
+// can send any), whereas only Twitch can say whose token this is. The client_id
+// check rejects tokens issued to other Twitch apps for the same user.
+// Returns the Twitch user ID, or null if the token is missing/invalid/foreign.
+async function authenticate(request: Request, env: Env): Promise<string | null> {
+    const authorization = request.headers.get('Authorization');
+
+    if (!authorization?.startsWith('Bearer ')) return null;
+
+    const token = authorization.slice('Bearer '.length);
+
+    // Twitch's validate endpoint uses the `OAuth` prefix, not `Bearer`.
+    const response = await fetch('https://id.twitch.tv/oauth2/validate', {
+        headers: { Authorization: `OAuth ${token}` },
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json<TwitchValidateResponse>();
+
+    if (data.client_id !== env.TWITCH_CLIENT_ID) return null;
+
+    return data.user_id;
 }
 
 // Telegram's HTML parse_mode only understands a small tag subset, and rejects
@@ -102,12 +138,12 @@ export default {
                 return new Response(null, { headers });
             }
 
-            const userId = url.searchParams.get('user_id');
+            const userId = await authenticate(request, env);
 
             if (!userId) {
                 return Response.json(
-                    { code: 400, error: 'Missing user_id' },
-                    { status: 400, headers }
+                    { code: 401, error: 'Invalid or missing Twitch token' },
+                    { status: 401, headers }
                 );
             }
 

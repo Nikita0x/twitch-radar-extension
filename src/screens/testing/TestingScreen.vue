@@ -1,10 +1,10 @@
 <template>
     <div class="testing-container">
-        <p @click="putUserSettings(storage.auth.userId, userSettingsState)">
+        <p @click="putUserSettings(storage.auth.accessToken, userSettingsState)">
             putUserSettings
         </p>
 
-        <p @click="getUserSettingsFromDatabaseByUserId(storage.auth.userId)">
+        <p @click="getUserSettingsFromDatabase(storage.auth.accessToken)">
             getUserSettings
         </p>
         <p>What is the reason for uninstall?</p>
@@ -24,7 +24,7 @@ import type { UserSettings } from '@/services/storage.service';
 import { storeToRefs } from 'pinia';
 import { useStorageStore } from '@/stores/storage.store';
 import { useUserSettingsStore } from '@/stores/user-settings.store';
-import { getUserSettingsFromDatabaseByUserId, putUserSettings } from '@/services/cloudflare.service';
+import { getUserSettingsFromDatabase, putUserSettings } from '@/services/cloudflare.service';
 
 const reason = ref<string>('');
 const status = ref<string>('');

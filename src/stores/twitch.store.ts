@@ -210,7 +210,7 @@ export const useTwitchStore = defineStore('twitch', () => {
                 userId: user.value.id,
             });
 
-            await syncSettings(user.value.id);
+            await syncSettings(token);
             await userSettinsStore.loadSettings()
 
             const fetchFollowedLiveStreamsResult = await fetchFollowedLiveStreams(token, user.value.id);
