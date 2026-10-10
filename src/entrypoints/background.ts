@@ -1,4 +1,4 @@
-import { ALARM_NAME } from '@/constants';
+import { ALARM_NAME, SETTINGS_SYNC_DEBOUNCE_MS } from '@/constants';
 import { setBadge } from '@/services/badge.service';
 import {
 	getStorage,
@@ -8,6 +8,8 @@ import {
 	type StreamerNotifications,
 } from '@/services/storage.service';
 import { fetchFollowedLiveStreams } from '@/services/twitch-api';
+import { putUserSettings } from '@/services/cloudflare.service';
+import { debounce } from '@/utils/utils';
 import type { FollowData } from '@/stores/twitch.store';
 
 export default defineBackground(() => {
@@ -49,6 +51,23 @@ export default defineBackground(() => {
 	browser.notifications.onClicked.addListener((notificationId) => {
 		browser.tabs.create({ url: `https://twitch.tv/${notificationId}` });
 		browser.notifications.clear(notificationId);
+	});
+
+	// Cloud sync lives here, not in the popup: a debounce timer in the popup dies
+	// with it if the user closes the popup right after a change, silently
+	// dropping the sync. The popup only writes storage.local.
+	const syncSettingsToCloud = debounce(async () => {
+		const { auth, userSettings } = await getStorage();
+
+		if (!auth.isAuthenticated || !auth.accessToken) return;
+
+		await putUserSettings(auth.accessToken, userSettings);
+	}, SETTINGS_SYNC_DEBOUNCE_MS);
+
+	browser.storage.onChanged.addListener((changes, areaName) => {
+		if (areaName === 'local' && changes.userSettings) {
+			syncSettingsToCloud();
+		}
 	});
 
 	/* ── OAuth handler ── */

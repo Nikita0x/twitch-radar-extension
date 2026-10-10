@@ -1,8 +1,7 @@
 import type { StreamerNotifications, UserSettings } from '@/services/storage.service';
-import { DEFAULT_USER_SETTINGS, getUserSettings, saveUserSettings, getAuth } from '@/services/storage.service';
+import { DEFAULT_USER_SETTINGS, getUserSettings, saveUserSettings } from '@/services/storage.service';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { putUserSettings } from '@/services/cloudflare.service';
 
 export type StreamerId = string;
 
@@ -19,7 +18,6 @@ export const useUserSettingsStore = defineStore('user-settings', () => {
         Object.assign(userSettingsState.value, partialSettings);
 
         await saveUserSettings(userSettingsState.value);
-        await syncSettingsToDatabase();
     }
 
     async function updateStreamerNotifications(
@@ -29,13 +27,12 @@ export const useUserSettingsStore = defineStore('user-settings', () => {
         userSettingsState.value.notifications[streamerId] = streamerNotifications;
 
         await saveUserSettings(userSettingsState.value);
-        await syncSettingsToDatabase();
     }
 
     async function toggleTheme() {
         const newTheme = userSettingsState.value.theme === 'dark' ? 'light' : 'dark';
-        await updateSettings({ theme: newTheme });
         applyTheme(newTheme);
+        await updateSettings({ theme: newTheme });
     }
 
     async function toggleLivePreviews() {
@@ -45,16 +42,6 @@ export const useUserSettingsStore = defineStore('user-settings', () => {
 
     function applyTheme(theme: 'light' | 'dark') {
         document.documentElement.setAttribute('data-theme', theme);
-    }
-
-    async function syncSettingsToDatabase() {
-        const auth = await getAuth();
-
-        if (!auth.isAuthenticated || !auth.accessToken) {
-            return;
-        }
-
-        await putUserSettings(auth.accessToken, userSettingsState.value);
     }
 
     return {

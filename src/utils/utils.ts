@@ -45,6 +45,15 @@ export function hasActiveNotifications(settings: UserSettings, streamerId: strin
 	);
 }
 
+export function debounce(fn: () => void, delayMs: number) {
+	let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+	return () => {
+		clearTimeout(timeoutId);
+		timeoutId = setTimeout(fn, delayMs);
+	};
+}
+
 export function getPreview(login: string, tick: number) {
 	const width = 200 + tick;
 
