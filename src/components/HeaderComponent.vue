@@ -35,7 +35,7 @@
 			<button
 				v-if="isAuthenticated && !canGoBack"
 				class="icon-btn heart-btn"
-				title="Changelog"
+				:title="hasUnseenChangelog ? 'Changelog — something new!' : 'Changelog'"
 				@click="navigationStore.navigateTo('changelog')"
 			>
 				<svg
@@ -54,6 +54,7 @@
 						/>
 					</g>
 				</svg>
+				<span v-if="hasUnseenChangelog" class="unseen-dot"></span>
 			</button>
 			<button
 				v-if="isAuthenticated && !canGoBack"
@@ -86,6 +87,7 @@ import { useTwitchStore } from '@/stores/twitch.store';
 import { useNavigationStore, type Screen } from '@/stores/navigation.store';
 import { storeToRefs } from 'pinia';
 import TabSwitcher from '@/components/TabSwitcher.vue';
+import { useChangelogStore } from '@/stores/changelog.store';
 
 const SCREEN_TITLES: Record<Screen, string> = {
 	favorites: 'Live',
@@ -100,6 +102,7 @@ const twitchStore = useTwitchStore();
 const navigationStore = useNavigationStore();
 const { isAuthenticated, followedLiveStreams, followedAllStreams } = storeToRefs(twitchStore);
 const { currentScreen, activeTab, canGoBack } = storeToRefs(navigationStore);
+const { hasUnseen: hasUnseenChangelog } = storeToRefs(useChangelogStore());
 </script>
 
 <style scoped>
@@ -192,6 +195,34 @@ const { currentScreen, activeTab, canGoBack } = storeToRefs(navigationStore);
 
 .cog-btn:hover .cog-icon {
 	transform: rotate(90deg);
+}
+
+.heart-btn {
+	position: relative;
+}
+
+.unseen-dot {
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--color-red);
+	box-shadow: 0 0 0 2px var(--color-header-bg);
+	animation: unseen-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes unseen-pulse {
+	50% {
+		transform: scale(1.25);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.unseen-dot {
+		animation: none;
+	}
 }
 
 .heart-btn:hover .heart-icon {

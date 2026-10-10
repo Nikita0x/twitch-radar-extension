@@ -22,6 +22,7 @@ import { useTwitchStore } from '@/stores/twitch.store.ts';
 import { useNavigationStore } from '@/stores/navigation.store.ts';
 import { useStorageStore } from '@/stores/storage.store.ts';
 import { useUserSettingsStore } from '@/stores/user-settings.store.ts';
+import { useChangelogStore } from '@/stores/changelog.store.ts';
 
 import type { Component } from 'vue';
 import type { Screen } from '@/stores/navigation.store.ts';
@@ -32,11 +33,13 @@ const twitchStore = useTwitchStore();
 const userSettingsStore = useUserSettingsStore();
 const navigationStore = useNavigationStore();
 const storageStore = useStorageStore();
+const changelogStore = useChangelogStore();
 const { followedLiveStreams, isAuthenticated } = storeToRefs(twitchStore);
 const { currentScreen } = storeToRefs(navigationStore);
 const { userSettingsState } = storeToRefs(userSettingsStore);
 
 onMounted(async () => {
+	await changelogStore.load();
 	await userSettingsStore.loadSettings();
 	userSettingsStore.applyTheme(userSettingsState.value.theme);
 	await twitchStore.init();

@@ -1,8 +1,10 @@
 import { ALARM_NAME, SETTINGS_SYNC_DEBOUNCE_MS, TEST_NOTIFICATION_ID } from '@/constants';
 import { setBadge } from '@/services/badge.service';
 import {
+	getLastSeenChangelogVersion,
 	getStorage,
 	getStreamerNotifications,
+	saveLastSeenChangelogVersion,
 	saveRuntime,
 	type PreviousStream,
 	type StreamerNotifications,
@@ -20,6 +22,19 @@ export default defineBackground(() => {
 	// Create a repeating alarm (every 30 seconds) when the extension is installed or updated.
 	browser.runtime.onInstalled.addListener(() => {
 		browser.alarms.create(ALARM_NAME, { periodInMinutes: 0.5 });
+	});
+
+	// Fresh installs start with nothing "new" in the changelog; updates mark everything
+	// newer than the version the user came from. Only written if missing, so skipping
+	// several updates without opening the changelog keeps all of them as unseen.
+	browser.runtime.onInstalled.addListener(async ({ reason, previousVersion }) => {
+		if (await getLastSeenChangelogVersion()) return;
+
+		if (reason === 'install') {
+			await saveLastSeenChangelogVersion(browser.runtime.getManifest().version);
+		} else if (reason === 'update' && previousVersion) {
+			await saveLastSeenChangelogVersion(previousVersion);
+		}
 	});
 
 	// Re-set on both install and startup (not just once) so the URL's baked-in

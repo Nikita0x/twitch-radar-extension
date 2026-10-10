@@ -41,7 +41,7 @@ export default defineConfig({
 	manifest: ({ browser, command }) => ({
 		name: 'Twitch Radar – Live Stream Notifications',
 		description: 'Get desktop notifications when your favorite Twitch streamers go live.',
-		version: '1.6.0',
+		version: '1.7.0',
 		permissions: ['notifications', 'identity', 'storage', 'alarms'],
 		host_permissions: ['https://api.twitch.tv/*'],
 		icons: icons(command, [16, 32, 48, 128]),

@@ -45,6 +45,19 @@ export function hasActiveNotifications(settings: UserSettings, streamerId: strin
 	);
 }
 
+/** Returns a positive number if `a` is newer than `b`, negative if older, 0 if equal ("1.10.0" > "1.9.0"). */
+export function compareVersions(a: string, b: string) {
+	const aParts = a.split('.').map(Number);
+	const bParts = b.split('.').map(Number);
+
+	for (let i = 0; i < Math.max(aParts.length, bParts.length); i++) {
+		const diff = (aParts[i] ?? 0) - (bParts[i] ?? 0);
+		if (diff !== 0) return diff;
+	}
+
+	return 0;
+}
+
 export function debounce(fn: () => void, delayMs: number) {
 	let timeoutId: ReturnType<typeof setTimeout> | undefined;
 

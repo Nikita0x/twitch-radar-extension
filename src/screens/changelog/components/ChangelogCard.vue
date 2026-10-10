@@ -1,5 +1,5 @@
 <template>
-	<div class="card">
+	<div class="card" :class="{ shimmer: highlight }">
 		<div class="header">
 			<span v-if="item.icon">{{ item.icon }}</span>
 			<h3 v-html="item.title"></h3>
@@ -28,10 +28,11 @@
 </template>
 
 <script setup lang="ts">
-import type { ChangelogItem } from '@/screens/changelog/ChangelogScreen.vue';
+import type { ChangelogItem } from '@/screens/changelog/changelog.data';
 
 interface Props {
 	item: ChangelogItem;
+	highlight?: boolean;
 }
 
 defineProps<Props>();
@@ -125,5 +126,39 @@ defineProps<Props>();
 
 .link:hover {
 	text-decoration: underline;
+}
+
+.shimmer {
+	position: relative;
+	overflow: hidden;
+	border-color: var(--color-accent);
+}
+
+.shimmer::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: linear-gradient(
+		110deg,
+		transparent 30%,
+		rgba(145, 70, 255, 0.25) 50%,
+		transparent 70%
+	);
+	transform: translateX(-100%);
+	animation: shimmer-sweep 1.4s ease-in-out 2;
+	animation-delay: calc(var(--i, 0) * 120ms + 300ms);
+}
+
+@keyframes shimmer-sweep {
+	to {
+		transform: translateX(100%);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.shimmer::after {
+		animation: none;
+	}
 }
 </style>

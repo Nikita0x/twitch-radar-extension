@@ -149,6 +149,19 @@ export async function saveRuntime(runtime: RuntimeState): Promise<void> {
     await browser.storage.local.set({ runtime: toPlain(runtime) });
 }
 
+// Its own key (not inside runtime) because the background alarm overwrites the
+// whole runtime object every 30s and would clobber a write made by the popup.
+export async function getLastSeenChangelogVersion(): Promise<string | null> {
+    const result = (await browser.storage.local.get('lastSeenChangelogVersion')) as {
+        lastSeenChangelogVersion?: string;
+    };
+    return result.lastSeenChangelogVersion ?? null;
+}
+
+export async function saveLastSeenChangelogVersion(version: string): Promise<void> {
+    await browser.storage.local.set({ lastSeenChangelogVersion: version });
+}
+
 /**
  * Convenience combined read of all three domains. Read-only by design — always
  * save through the targeted save*() functions above, never reassemble this
