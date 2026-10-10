@@ -1,63 +1,108 @@
 <template>
-	<div class="twitch-auth custom-scrollbar">
-		<!-- Theme toggle -->
-		<div v-if="isAuthenticated" class="setting-row">
-			<label class="toggle-label">
-				<input
-					type="checkbox"
+	<div class="settings custom-scrollbar">
+		<section class="section">
+			<h3 class="section-title">Appearance</h3>
+			<div class="card">
+				<Toggle
+					label="Dark theme"
+					description="Easier on the eyes at night."
 					:checked="userSettingsState.theme === 'dark'"
 					@change="userSettingsStore.toggleTheme()"
 				/>
-				Dark theme
-			</label>
-		</div>
-
-		<div class="setting-row">
-			<label class="toggle-label">
-				<input
-					type="checkbox"
+				<Toggle
+					label="Live previews (experimental)"
+					description="Refreshes stream thumbnails every 30 seconds while the popup is open. May stop working if Twitch changes how previews are cached."
 					:checked="userSettingsState.livePreviews"
-					@change="userSettingsStore.toggleLivePreviews"
+					@change="userSettingsStore.toggleLivePreviews()"
 				/>
-				Live Previews (experimental)
-			</label>
-
-			<div
-				style="cursor: help"
-				title="Automatically refreshes stream preview thumbnails every 30 seconds while the popup is open.
-                
-Experimental feature. May stop working if Twitch changes how preview images are cached."
-			>
-				<svg
-					class="info-icon"
-					xmlns="http://www.w3.org/2000/svg"
-					width="16"
-					height="16"
-					viewBox="0 0 16.93 16.93"
-				>
-					<path
-						d="M8.51 0C3.83-.02.02 3.75 0 8.42c-.02 4.68 3.75 8.49 8.42 8.51 4.68.02 8.49-3.75 8.51-8.42C16.96 3.83 13.18.02 8.51 0m-.12 2.28c.41 0 .75.15 1.03.44.29.28.43.63.43 1.04s-.14.75-.43 1.04c-.28.28-.63.42-1.03.42-.42 0-.76-.14-1.05-.42-.28-.28-.43-.63-.43-1.04 0-.42.15-.76.44-1.04.28-.29.63-.44 1.04-.44M6 6.07h3.89v7.25h1.17v.93H6v-.93h1.16V7H6Z"
-					/>
-				</svg>
 			</div>
-		</div>
+		</section>
 
-		<div v-if="isAuthenticated && user" class="account-section">
+		<section class="section">
+			<h3 class="section-title">Notifications</h3>
+			<div class="card">
+				<button class="row-link" @click="navigationStore.switchTab('following')">
+					<span class="row-text">
+						Manage per-streamer notifications
+						<span class="row-subtext">
+							Enabled for {{ streamersWithNotifications }}
+							{{ streamersWithNotifications === 1 ? 'streamer' : 'streamers' }}
+						</span>
+					</span>
+					<span class="chevron">›</span>
+				</button>
+
+				<div class="test-notification">
+					<button class="secondary-btn" @click="sendTestNotification">
+						Send test notification
+					</button>
+					<p v-if="testStatus === 'sent'" class="hint">
+						Didn't see it? Make sure notifications for your browser are allowed in your system
+						settings and Do Not Disturb / Focus mode is off.
+					</p>
+					<p v-else-if="testStatus === 'failed'" class="hint error">
+						Couldn't send a notification: {{ testError }}
+					</p>
+				</div>
+			</div>
+		</section>
+
+		<section v-if="isAuthenticated && user" class="section">
 			<h3 class="section-title">Account</h3>
-			<div class="account-row">
+			<div class="card account-row">
 				<img :src="user.profile_image_url" class="account-avatar" :alt="user.display_name" />
 				<span class="account-name">{{ user.display_name }}</span>
 				<button @click="logout" class="logout-btn">Logout</button>
 			</div>
-		</div>
+		</section>
+
+		<section class="section">
+			<h3 class="section-title">About</h3>
+			<div class="card">
+				<div class="about-row">
+					<span class="about-label">Version</span>
+					<span>{{ version }}</span>
+				</div>
+				<div class="about-row">
+					<span class="about-label">Extension ID</span>
+					<code class="extension-id">{{ extensionId }}</code>
+					<button class="copy-btn" @click="copyExtensionId">
+						{{ copied ? 'Copied!' : 'Copy' }}
+					</button>
+				</div>
+
+				<a class="row-link" :href="STORE_REVIEW_URL" target="_blank" rel="noopener noreferrer">
+					<span>★ Rate Twitch Radar on {{ STORE_NAME }}</span>
+					<span class="chevron">›</span>
+				</a>
+				<a class="row-link" :href="ISSUES_URL" target="_blank" rel="noopener noreferrer">
+					<span>🐞 Report a bug or request a feature</span>
+					<span class="chevron">›</span>
+				</a>
+				<a class="row-link" :href="PRIVACY_POLICY_URL" target="_blank" rel="noopener noreferrer">
+					<span>🔒 Privacy policy</span>
+					<span class="chevron">›</span>
+				</a>
+			</div>
+		</section>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useTwitchStore } from '@/stores/twitch.store.ts';
 import { useUserSettingsStore } from '@/stores/user-settings.store.ts';
 import { useNavigationStore } from '@/stores/navigation.store.ts';
+import { hasActiveNotifications } from '@/utils/utils';
+import Toggle from '@/components/Toggle.vue';
+
+const STORE_NAME = import.meta.env.FIREFOX ? 'Firefox Add-ons' : 'Chrome Web Store';
+const STORE_REVIEW_URL = import.meta.env.FIREFOX
+	? 'https://addons.mozilla.org/en-US/firefox/addon/twitch-radar-live-notifs/'
+	: 'https://chromewebstore.google.com/detail/fcjbgobfppjggabcbbnngehhefllbllm/reviews';
+const ISSUES_URL = 'https://github.com/Nikita0x/chrome-extension/issues';
+const PRIVACY_POLICY_URL = 'https://nikita0x.github.io/twitch-radar-extension/privacy-policy.html';
 
 const twitchStore = useTwitchStore();
 const userSettingsStore = useUserSettingsStore();
@@ -66,6 +111,34 @@ const navigationStore = useNavigationStore();
 const { user, isAuthenticated } = storeToRefs(twitchStore);
 const { userSettingsState } = storeToRefs(userSettingsStore);
 
+const version = browser.runtime.getManifest().version;
+const extensionId = browser.runtime.id;
+
+const streamersWithNotifications = computed(
+	() =>
+		Object.keys(userSettingsState.value.notifications).filter((streamerId) =>
+			hasActiveNotifications(userSettingsState.value, streamerId)
+		).length
+);
+
+const testStatus = ref<'idle' | 'sent' | 'failed'>('idle');
+const testError = ref('');
+
+async function sendTestNotification() {
+	const response = await browser.runtime.sendMessage({ type: 'SEND_TEST_NOTIFICATION' });
+
+	testStatus.value = response?.ok ? 'sent' : 'failed';
+	testError.value = response?.error ?? '';
+}
+
+const copied = ref(false);
+
+async function copyExtensionId() {
+	await navigator.clipboard.writeText(extensionId);
+	copied.value = true;
+	setTimeout(() => (copied.value = false), 1500);
+}
+
 async function logout() {
 	await twitchStore.logout();
 	navigationStore.switchTab('favorites');
@@ -73,60 +146,109 @@ async function logout() {
 </script>
 
 <style scoped>
-.twitch-auth {
+.settings {
 	display: flex;
 	flex-direction: column;
+	gap: 16px;
 	height: 100%;
-
-	background: var(--color-bg);
+	padding: 12px 16px;
 	overflow: auto;
+	background: var(--color-bg);
 }
 
-.setting-row {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding: 8px 5px;
-	text-align: left;
-}
-
-.info-icon {
-	fill: var(--color-text);
-}
-
-.toggle-label {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	cursor: pointer;
-	font-size: 14px;
-	user-select: none;
-	color: var(--color-text);
-}
-
-.toggle-label input[type='checkbox'] {
-	width: 16px;
-	height: 16px;
-	cursor: pointer;
-	accent-color: var(--color-accent);
-}
-
-.account-section {
+.section {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
-	padding: 12px 5px;
-	border-top: 1px solid var(--color-border);
 }
 
 .section-title {
-	font-size: 14px;
+	margin: 0;
+	font-size: 13px;
 	font-weight: 700;
+	color: var(--color-text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.card {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 12px;
+	background: var(--color-bg-secondary);
+	border-radius: 10px;
+}
+
+.row-link {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0;
+	border: none;
+	background: none;
 	color: var(--color-text);
+	font-size: 14px;
+	text-align: left;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.row-link:hover {
+	color: var(--color-accent);
+}
+
+.row-text {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.row-subtext {
+	font-size: 12px;
+	color: var(--color-text-dim);
+}
+
+.chevron {
+	font-size: 18px;
+	color: var(--color-text-dim);
+}
+
+.test-notification {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.secondary-btn {
+	align-self: flex-start;
+	padding: 6px 12px;
+	border: 1px solid var(--color-accent);
+	border-radius: 6px;
+	background: transparent;
+	color: var(--color-accent);
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.15s ease;
+}
+
+.secondary-btn:hover {
+	background: rgba(145, 70, 255, 0.12);
+}
+
+.hint {
+	margin: 0;
+	font-size: 12px;
+	color: var(--color-text-dim);
+}
+
+.hint.error {
+	color: var(--color-error);
 }
 
 .account-row {
-	display: flex;
+	flex-direction: row;
 	align-items: center;
 	gap: 10px;
 }
@@ -155,5 +277,36 @@ async function logout() {
 
 .logout-btn:hover {
 	filter: brightness(1.2);
+}
+
+.about-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 14px;
+	color: var(--color-text);
+}
+
+.about-label {
+	color: var(--color-text-dim);
+	min-width: 90px;
+}
+
+.extension-id {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 12px;
+}
+
+.copy-btn {
+	padding: 2px 8px;
+	border: 1px solid var(--color-border-input);
+	border-radius: 4px;
+	background: var(--color-bg);
+	color: var(--color-text);
+	font-size: 12px;
+	cursor: pointer;
 }
 </style>

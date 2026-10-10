@@ -1,4 +1,4 @@
-import { ALARM_NAME, SETTINGS_SYNC_DEBOUNCE_MS } from '@/constants';
+import { ALARM_NAME, SETTINGS_SYNC_DEBOUNCE_MS, TEST_NOTIFICATION_ID } from '@/constants';
 import { setBadge } from '@/services/badge.service';
 import {
 	getStorage,
@@ -13,6 +13,10 @@ import { debounce } from '@/utils/utils';
 import type { FollowData } from '@/stores/twitch.store';
 
 export default defineBackground(() => {
+	const NOTIFICATION_ICON_URL = browser.runtime.getURL(
+		import.meta.env.COMMAND === 'serve' ? '/dev/icon128.png' : '/icon128.png'
+	);
+
 	// Create a repeating alarm (every 30 seconds) when the extension is installed or updated.
 	browser.runtime.onInstalled.addListener(() => {
 		browser.alarms.create(ALARM_NAME, { periodInMinutes: 0.5 });
@@ -41,6 +45,8 @@ export default defineBackground(() => {
 
 	// Open the stream when the user clicks the "Open Stream" notification button.
 	browser.notifications.onButtonClicked.addListener((notificationId, buttonIndex) => {
+		if (notificationId === TEST_NOTIFICATION_ID) return;
+
 		if (buttonIndex === 0) {
 			browser.tabs.create({ url: `https://twitch.tv/${notificationId}` });
 		}
@@ -49,7 +55,10 @@ export default defineBackground(() => {
 	// Firefox doesn't support notification buttons, so clicking the notification
 	// body itself is the only way to open the stream there.
 	browser.notifications.onClicked.addListener((notificationId) => {
-		browser.tabs.create({ url: `https://twitch.tv/${notificationId}` });
+		// Notification IDs are streamer logins, except the test one from Settings.
+		if (notificationId !== TEST_NOTIFICATION_ID) {
+			browser.tabs.create({ url: `https://twitch.tv/${notificationId}` });
+		}
 		browser.notifications.clear(notificationId);
 	});
 
@@ -74,10 +83,30 @@ export default defineBackground(() => {
 	browser.runtime.onMessage.addListener((message) => {
 		const msg = message as { type?: string; url?: string };
 
+		if (msg.type === 'SEND_TEST_NOTIFICATION') return sendTestNotification();
+
 		if (msg.type !== 'OAUTH_LOGIN' || !msg.url) return;
 
 		return handleOAuth(msg.url);
 	});
+
+	async function sendTestNotification() {
+		try {
+			// Re-creating an existing ID only updates it silently in Chrome — clear
+			// first so repeated clicks pop up a fresh notification every time.
+			await browser.notifications.clear(TEST_NOTIFICATION_ID);
+			await browser.notifications.create(TEST_NOTIFICATION_ID, {
+				type: 'basic',
+				iconUrl: NOTIFICATION_ICON_URL,
+				title: 'Twitch Radar test notification 🔔',
+				message: 'Notifications are working! You will see alerts like this when streamers go live.',
+			});
+			return { ok: true };
+		} catch (err) {
+			console.error('[background] Test notification failed:', err);
+			return { ok: false, error: err instanceof Error ? err.message : String(err) };
+		}
+	}
 
 	async function handleOAuth(url: string) {
 		try {
@@ -182,9 +211,7 @@ export default defineBackground(() => {
 		try {
 			await browser.notifications.create(stream.user_login, {
 				type: 'basic',
-				iconUrl: browser.runtime.getURL(
-					import.meta.env.COMMAND === 'serve' ? '/dev/icon128.png' : '/icon128.png'
-				),
+				iconUrl: NOTIFICATION_ICON_URL,
 				title,
 				message,
 				// Firefox throws "Unexpected property" if these are present -

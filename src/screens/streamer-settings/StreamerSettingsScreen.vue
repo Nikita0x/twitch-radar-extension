@@ -87,7 +87,7 @@ import { useTwitchStore } from '@/stores/twitch.store';
 import { getStreamerNotifications } from '@/services/storage.service';
 import { formatDate } from '@/utils/utils';
 import StreamerTypeBadge from '@/components/StreamerTypeBadge.vue';
-import Toggle from './components/Toggle.vue';
+import Toggle from '@/components/Toggle.vue';
 
 const navigationStore = useNavigationStore();
 const userSettingsStore = useUserSettingsStore();
