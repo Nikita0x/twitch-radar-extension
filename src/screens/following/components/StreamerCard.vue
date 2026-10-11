@@ -2,7 +2,13 @@
 	<div class="streamer-card">
 		<div class="card-header">
 			<div style="display: flex; gap: 12px">
-				<div class="avatar-wrap">
+				<a
+					:href="channelUrl"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="avatar-wrap"
+					:title="`Open ${props.streamer.display_name}'s channel`"
+				>
 					<div class="avatar-skeleton" :class="{ hidden: avatarLoaded }"></div>
 					<img
 						:src="props.streamer.profile_image_url"
@@ -14,11 +20,24 @@
 						@load="avatarLoaded = true"
 					/>
 					<span v-if="isLive" class="live-badge">LIVE</span>
-				</div>
+				</a>
 				<div class="header-info">
-					<h3 class="display-name">{{ props.streamer.display_name }}</h3>
+					<a
+						:href="channelUrl"
+						target="_blank"
+						rel="noopener noreferrer"
+						class="display-name"
+						:title="`Open ${props.streamer.display_name}'s channel`"
+					>
+						{{ props.streamer.display_name }}
+					</a>
 					<span class="login">@{{ props.streamer.login }}</span>
-					<StreamerTypeBadge :type="props.streamer.broadcaster_type" />
+					<div class="badges">
+						<StreamerTypeBadge :type="props.streamer.broadcaster_type" />
+						<span v-if="props.tracked" class="tracked-badge" title="Tracked without following">
+							👁 Tracked
+						</span>
+					</div>
 				</div>
 			</div>
 
@@ -51,14 +70,13 @@
 		<p v-else class="description empty">No description</p>
 		<div class="card-footer">
 			<span class="created">Joined {{ formatDate(props.streamer.created_at) }}</span>
-			<a
-				:href="`https://twitch.tv/${props.streamer.login}`"
-				target="_blank"
-				rel="noopener noreferrer"
-				class="profile-link"
+			<button
+				v-if="props.tracked"
+				class="untrack-btn"
+				@click="twitchStore.untrackChannel(props.streamer.id)"
 			>
-				Open channel
-			</a>
+				Stop tracking
+			</button>
 		</div>
 	</div>
 </template>
@@ -77,6 +95,7 @@ import StreamerTypeBadge from '@/components/StreamerTypeBadge.vue';
 
 interface Props {
 	streamer: StreamersDetails;
+	tracked?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -89,6 +108,7 @@ const { followedLiveStreams } = storeToRefs(twitchStore);
 const { userSettingsState } = storeToRefs(userSettingsStore);
 
 const avatarLoaded = ref(false);
+const channelUrl = computed(() => `https://twitch.tv/${props.streamer.login}`);
 
 function openStreamerSettings(streamerDetails: StreamersDetails) {
 	selectedStreamer.value = streamerDetails;
@@ -129,6 +149,7 @@ const hasNotificationsEnabled = computed(() =>
 }
 
 .avatar-wrap {
+	display: block;
 	position: relative;
 	flex-shrink: 0;
 	width: 60px;
@@ -219,12 +240,18 @@ const hasNotificationsEnabled = computed(() =>
 
 .display-name {
 	margin: 0;
+	text-decoration: none;
 	font-size: 16px;
 	font-weight: 700;
 	color: var(--color-text);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	transition: color 0.2s;
+
+	&:hover {
+		color: var(--color-accent);
+	}
 }
 
 .login {
@@ -256,15 +283,31 @@ const hasNotificationsEnabled = computed(() =>
 	color: var(--color-text-dim);
 }
 
-.profile-link {
+.badges {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.tracked-badge {
+	padding: 1px 6px;
+	border: 1px solid var(--color-border);
+	border-radius: 4px;
+	font-size: 11px;
+	color: var(--color-text-muted);
+	cursor: help;
+}
+
+.untrack-btn {
+	padding: 0;
+	border: none;
+	background: none;
 	font-size: 12px;
-	font-weight: 600;
-	color: var(--color-accent);
-	text-decoration: none;
-	transition: color 0.2s;
+	color: var(--color-text-dim);
+	cursor: pointer;
 
 	&:hover {
-		color: var(--color-accent-hover);
+		color: var(--color-error);
 		text-decoration: underline;
 	}
 }

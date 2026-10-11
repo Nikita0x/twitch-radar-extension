@@ -53,6 +53,7 @@
 				</div>
 
 				<span class="uptime">
+					<span v-if="isTracked" class="tracked-badge" title="Tracked without following">👁</span>
 					<span
 						v-if="isNew"
 						class="new-badge"
@@ -77,6 +78,7 @@ import { storeToRefs } from 'pinia';
 
 import { useUserSettingsStore } from '@/stores/user-settings.store.ts';
 import { useStorageStore } from '@/stores/storage.store.ts';
+import { useTwitchStore } from '@/stores/twitch.store.ts';
 
 interface Props {
 	stream: FollowData;
@@ -89,9 +91,11 @@ const storageStore = useStorageStore();
 
 const { userSettingsState } = storeToRefs(userSettingsStore);
 const { storage } = storeToRefs(storageStore);
+const { trackedOnlyIds } = storeToRefs(useTwitchStore());
 
 const imageLoaded = ref(false);
 const isNew = computed(() => isNewStream(props.stream.started_at));
+const isTracked = computed(() => trackedOnlyIds.value.has(props.stream.user_id));
 
 watch(
 	() => storage.value.runtime.previewTick,
@@ -244,6 +248,14 @@ watch(
 	text-transform: uppercase;
 	background: var(--color-red);
 	color: white;
+	cursor: help;
+}
+
+.tracked-badge {
+	padding: 1px 5px;
+	border: 1px solid var(--color-border);
+	border-radius: 4px;
+	font-size: 11px;
 	cursor: help;
 }
 

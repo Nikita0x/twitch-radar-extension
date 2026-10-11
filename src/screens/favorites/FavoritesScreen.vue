@@ -11,6 +11,16 @@
 				placeholder="Streamer name..."
 				v-model="search"
 			/>
+			<button
+				v-if="trackedOnlyIds.size > 0"
+				class="tracked-filter"
+				:class="{ active: trackedOnly }"
+				:aria-pressed="trackedOnly"
+				:title="trackedOnly ? 'Show all live streams' : 'Show only tracked channels'"
+				@click="trackedOnly = !trackedOnly"
+			>
+				👁
+			</button>
 			<div>
 				<select
 					class="sort-select"
@@ -40,9 +50,16 @@
 				No active streams
 			</div>
 			<div v-else-if="visibleStreams.length === 0" key="empty-search" class="empty-search">
-				<div class="icon">🔍</div>
-				<h3>No streamer found</h3>
-				<p>Try a different search term</p>
+				<template v-if="trackedOnly && !search.trim()">
+					<div class="icon">👁</div>
+					<h3>No tracked channels live</h3>
+					<p>Turn off the filter to see everyone</p>
+				</template>
+				<template v-else>
+					<div class="icon">🔍</div>
+					<h3>No streamer found</h3>
+					<p>Try a different search term</p>
+				</template>
 			</div>
 			<TransitionGroup v-else key="list" tag="div" name="streams" class="results-section">
 				<StreamCard
@@ -75,11 +92,14 @@ import { useNavigationStore } from '@/stores/navigation.store.ts';
 const twitchStore = useTwitchStore();
 const userSettingsStore = useUserSettingsStore();
 const navigationStore = useNavigationStore();
-const { loading, error, followedLiveStreams, isAuthenticated } = storeToRefs(twitchStore);
+const { loading, error, followedLiveStreams, trackedOnlyIds, isAuthenticated } =
+	storeToRefs(twitchStore);
 const { userSettingsState } = storeToRefs(userSettingsStore);
 const { currentScreen } = storeToRefs(navigationStore);
 
 const search = ref('');
+// Not persisted on purpose: a filter remembered across popup opens reads as "my streams are gone".
+const trackedOnly = ref(false);
 const inputRef = useTemplateRef('search-input');
 
 const getTime = (date: string) => new Date(date).getTime();
@@ -110,13 +130,26 @@ const sortedStreams = computed(() => {
 
 const visibleStreams = computed(() => {
 	const query = search.value.trim().toLowerCase();
+	let streams = sortedStreams.value;
 
-	if (!query) {
-		return sortedStreams.value;
+	if (trackedOnly.value) {
+		streams = streams.filter((stream) => trackedOnlyIds.value.has(stream.user_id));
 	}
 
-	return sortedStreams.value.filter((stream) => stream.user_name.toLowerCase().includes(query));
+	if (query) {
+		streams = streams.filter((stream) => stream.user_name.toLowerCase().includes(query));
+	}
+
+	return streams;
 });
+
+// Untracking the last channel hides the button — don't leave an invisible filter on.
+watch(
+	() => trackedOnlyIds.value.size,
+	(size) => {
+		if (size === 0) trackedOnly.value = false;
+	}
+);
 
 watch(inputRef, (input) => {
 	input?.focus();
@@ -218,6 +251,34 @@ watch(inputRef, (input) => {
 		border-color 0.2s,
 		box-shadow 0.2s,
 		background 0.2s;
+}
+
+.tracked-filter {
+	width: 38px;
+	height: 38px;
+	flex-shrink: 0;
+	margin-inline: 5px;
+	border: 1px solid var(--color-border-input);
+	border-radius: 8px;
+	background: var(--color-bg-input);
+	font-size: 16px;
+	cursor: pointer;
+	opacity: 0.6;
+	transition:
+		border-color 0.2s,
+		background 0.2s,
+		opacity 0.2s;
+
+	&:hover {
+		opacity: 1;
+	}
+}
+
+.tracked-filter.active {
+	border-color: var(--color-accent);
+	background: var(--color-bg-secondary);
+	box-shadow: 0 0 0 3px rgba(145, 70, 255, 0.18);
+	opacity: 1;
 }
 
 .search-input {

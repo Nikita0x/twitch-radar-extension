@@ -9,7 +9,7 @@ import {
 	type PreviousStream,
 	type StreamerNotifications,
 } from '@/services/storage.service';
-import { fetchFollowedLiveStreams } from '@/services/twitch-api';
+import { fetchLiveStreams } from '@/services/twitch-api';
 import { putUserSettings } from '@/services/cloudflare.service';
 import { debounce } from '@/utils/utils';
 import type { FollowData } from '@/stores/twitch.store';
@@ -164,9 +164,10 @@ export default defineBackground(() => {
 
 		if (!storage.auth.isAuthenticated) return;
 
-		const liveStreamsResult = await fetchFollowedLiveStreams(
+		const liveStreamsResult = await fetchLiveStreams(
 			storage.auth.accessToken,
-			storage.auth.userId
+			storage.auth.userId,
+			storage.userSettings.trackedChannels
 		);
 
 		if (!liveStreamsResult.ok) {

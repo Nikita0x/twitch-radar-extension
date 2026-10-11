@@ -17,6 +17,36 @@ export interface ChangelogItem {
 }
 export const CHANGELOG: Changelog[] = [
 	{
+		version: '1.8.0',
+		date: 'October 2026',
+		items: [
+			{
+				icon: '👁',
+				title: 'Track channels without following',
+				description: 'Add a channel to your radar without following it on Twitch.',
+			},
+			{
+				icon: '🔍',
+				title: 'Search all of Twitch',
+				description:
+					'Search in the Following tab now looks beyond your own list: any channel on Twitch shows up below your results, with its live status and a Track button.',
+			},
+			{
+				title: 'Tracked-only filter',
+				description:
+					'Tap 👁 next to sorting in the Live tab to see only the channels you track. Sorting keeps working while the filter is on.',
+			},
+			{
+				title: 'Other',
+				bullets: [
+					"Click a streamer's avatar or name in Following to open their channel",
+					'Fixed the login screen briefly flashing when opening the popup',
+					'Loading placeholders now look the same across all screens',
+				],
+			},
+		],
+	},
+	{
 		version: '1.7.0',
 		date: 'October 2026',
 		items: [
@@ -175,11 +205,6 @@ export const IDEAS: ChangelogItem[] = [
 		icon: '🔊',
 		title: 'Custom notification sounds',
 		description: 'Pick a sound per event, or upload your own.',
-	},
-	{
-		icon: '➕',
-		title: 'Track channels without following',
-		description: 'Add a channel to your radar without following it on Twitch.',
 	},
 	{
 		icon: '💜',

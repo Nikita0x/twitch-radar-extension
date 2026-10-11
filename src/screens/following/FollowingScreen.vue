@@ -28,20 +28,21 @@
 					/>
 				</div>
 
-				<div v-if="search && filteredStreamers.length === 0" class="empty-search">
-					<div class="icon">🔍</div>
-					<h3>No streamer found</h3>
-					<p>Try a different search term</p>
-				</div>
+				<p v-if="search && filteredStreamers.length === 0" class="empty-search">
+					No matches in your channels
+				</p>
 
 				<div class="results-section">
 					<StreamerCard
 						v-for="(streamer, index) in filteredStreamers"
 						:key="streamer.id"
 						:streamer="streamer"
+						:tracked="trackedOnlyIds.has(streamer.id)"
 						:style="{ '--i': index }"
 					/>
 				</div>
+
+				<ChannelSearchResults :query="search" />
 			</div>
 		</Transition>
 	</div>
@@ -57,13 +58,21 @@ import { hasActiveNotifications } from '@/utils/utils.ts';
 
 import StreamerCard from '@/screens/following/components/StreamerCard.vue';
 import StreamerCardSkeleton from '@/screens/following/components/StreamerCardSkeleton.vue';
+import ChannelSearchResults from '@/screens/following/components/ChannelSearchResults.vue';
 
 const twitchStore = useTwitchStore();
 const userSettingsStore = useUserSettingsStore();
 const navigationStore = useNavigationStore();
 
-const { loading, error, followedAllStreams, followedLiveStreams, isAuthenticated } =
-	storeToRefs(twitchStore);
+const {
+	loading,
+	error,
+	followedAllStreams,
+	followedLiveStreams,
+	trackedStreamers,
+	trackedOnlyIds,
+	isAuthenticated,
+} = storeToRefs(twitchStore);
 const { userSettingsState } = storeToRefs(userSettingsStore);
 const { previousScreen } = storeToRefs(navigationStore);
 
@@ -90,8 +99,12 @@ const localLoading = computed(
 
 const liveStreamerIds = computed(() => new Set(followedLiveStreams.value.map((s) => s.user_id)));
 
+const trackedOnly = computed(() =>
+	trackedStreamers.value.filter((s) => trackedOnlyIds.value.has(s.id))
+);
+
 const filteredStreamers = computed(() => {
-	let list = followedAllStreams.value;
+	let list = [...followedAllStreams.value, ...trackedOnly.value];
 
 	if (search.value) {
 		const q = search.value.toLowerCase();
@@ -198,28 +211,8 @@ watch(searchRef, async (input) => {
 }
 
 .empty-search {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	min-height: 180px;
-	text-align: center;
-	color: var(--color-text-muted);
-}
-
-.empty-search .icon {
-	font-size: 40px;
-	margin-bottom: 12px;
-	opacity: 0.8;
-}
-
-.empty-search h3 {
 	margin: 0;
-	font-size: 18px;
-}
-
-.empty-search p {
-	margin-top: 6px;
+	padding: 8px 10px;
 	font-size: 13px;
 	color: var(--color-text-dim);
 }

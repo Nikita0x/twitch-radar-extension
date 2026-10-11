@@ -61,6 +61,8 @@ export interface UserSettings {
     theme: 'light' | 'dark';
     livePreviews: boolean;
     notifications: Record<StreamerId, StreamerNotifications>;
+    /** Channels polled for live status without the user following them on Twitch. */
+    trackedChannels: StreamerId[];
 }
 
 export const DEFAULT_AUTH: AuthState = {
@@ -74,6 +76,7 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
     sort: 'viewers:highToLow',
     theme: 'light',
     livePreviews: false,
+    trackedChannels: [],
 };
 
 export const DEFAULT_RUNTIME: RuntimeState = {
@@ -133,7 +136,9 @@ export async function getUserSettings(): Promise<UserSettings> {
     const result = (await browser.storage.local.get('userSettings')) as {
         userSettings?: UserSettings;
     };
-    return result.userSettings ?? structuredClone(DEFAULT_USER_SETTINGS);
+    // Spread over defaults so settings saved by an older version (or pulled from
+    // the cloud) get fields added since then, e.g. trackedChannels.
+    return { ...structuredClone(DEFAULT_USER_SETTINGS), ...result.userSettings };
 }
 
 export async function saveUserSettings(settings: UserSettings): Promise<void> {

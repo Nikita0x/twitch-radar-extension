@@ -39,9 +39,9 @@ const { currentScreen } = storeToRefs(navigationStore);
 const { userSettingsState } = storeToRefs(userSettingsStore);
 
 onMounted(async () => {
-	await changelogStore.load();
 	await userSettingsStore.loadSettings();
 	userSettingsStore.applyTheme(userSettingsState.value.theme);
+	changelogStore.load();
 	await twitchStore.init();
 	await storageStore.load();
 });

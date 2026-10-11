@@ -9,7 +9,7 @@ import {
 	type RuntimeState,
 } from '@/services/storage.service';
 import { setBadge } from '@/services/badge.service';
-import { fetchFollowedLiveStreams } from '@/services/twitch-api';
+import { fetchLiveStreams, fetchStreamsByUserIds } from '@/services/twitch-api';
 import { CLIENT_ID } from '@/constants';
 import { request, type Result, ok, err } from '@/types/result';
 import { performOAuth } from '@/services/auth.service';
@@ -67,10 +67,19 @@ export const useTwitchStore = defineStore('twitch', () => {
 	const error = ref<string | null>(null);
 	const followedLiveStreams = ref<FollowData[]>([]);
 	const followedAllStreams = ref<StreamersDetails[]>([]);
+	const trackedStreamers = ref<StreamersDetails[]>([]);
 
 	const userSettinsStore = useUserSettingsStore();
 
 	const isAuthenticated = computed(() => !!accessToken.value);
+
+	// A tracked channel the user later followed on Twitch counts as followed only.
+	const trackedOnlyIds = computed(() => {
+		const followedIds = new Set(followedAllStreams.value.map((s) => s.id));
+		return new Set(
+			userSettinsStore.userSettingsState.trackedChannels.filter((id) => !followedIds.has(id))
+		);
+	});
 
 	async function fetchUserProfile(token: string): Promise<Result<TwitchUser>> {
 		const result = await request<{ data: TwitchUser[] }>('https://api.twitch.tv/helix/users', {
@@ -219,7 +228,11 @@ export const useTwitchStore = defineStore('twitch', () => {
 			await syncSettings(token);
 			await userSettinsStore.loadSettings();
 
-			const fetchFollowedLiveStreamsResult = await fetchFollowedLiveStreams(token, user.value.id);
+			const fetchFollowedLiveStreamsResult = await fetchLiveStreams(
+				token,
+				user.value.id,
+				userSettinsStore.userSettingsState.trackedChannels
+			);
 
 			if (!fetchFollowedLiveStreamsResult.ok) {
 				console.error(fetchFollowedLiveStreamsResult.error);
@@ -247,6 +260,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 			}
 
 			followedAllStreams.value = fetchDetailsAboutStreamersResult.data;
+			await loadTrackedStreamers(token);
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
 			if (message.includes('canceled') || message.includes('cancelled')) {
@@ -266,6 +280,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 		user.value = null;
 		followedLiveStreams.value = [];
 		followedAllStreams.value = [];
+		trackedStreamers.value = [];
 		error.value = null;
 		loading.value = false;
 	}
@@ -288,9 +303,10 @@ export const useTwitchStore = defineStore('twitch', () => {
 
 				user.value = getUserProfileResult.data;
 
-				const fetchFollowedLiveStreamsResult = await fetchFollowedLiveStreams(
+				const fetchFollowedLiveStreamsResult = await fetchLiveStreams(
 					accessToken.value,
-					user.value.id
+					user.value.id,
+					userSettinsStore.userSettingsState.trackedChannels
 				);
 
 				if (!fetchFollowedLiveStreamsResult.ok) {
@@ -319,6 +335,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 				}
 
 				followedAllStreams.value = getDetailsAboutStreamersResult.data;
+				await loadTrackedStreamers(accessToken.value);
 			} else {
 				accessToken.value = null;
 				user.value = null;
@@ -330,6 +347,57 @@ export const useTwitchStore = defineStore('twitch', () => {
 		} finally {
 			loading.value = false;
 		}
+	}
+
+	async function loadTrackedStreamers(token: string) {
+		const ids = userSettinsStore.userSettingsState.trackedChannels;
+
+		if (ids.length === 0) {
+			trackedStreamers.value = [];
+			return;
+		}
+
+		const result = await fetchDetailsAboutStreamers(token, ids);
+
+		// Tracked channels are an extra — a failure here must not break the Following tab.
+		if (result.ok) {
+			trackedStreamers.value = result.data;
+		}
+	}
+
+	async function trackChannel(streamerId: string) {
+		if (!accessToken.value) return;
+
+		const trackedChannels = userSettinsStore.userSettingsState.trackedChannels;
+		if (trackedChannels.includes(streamerId)) return;
+
+		const result = await fetchDetailsAboutStreamers(accessToken.value, [streamerId]);
+		if (!result.ok || !result.data[0]) return;
+
+		trackedStreamers.value.push(result.data[0]);
+		await userSettinsStore.updateSettings({ trackedChannels: [...trackedChannels, streamerId] });
+
+		// Show it in Live right away instead of waiting up to 30s for the background poll.
+		const streamResult = await fetchStreamsByUserIds(accessToken.value, [streamerId]);
+		const stream = streamResult.ok ? streamResult.data[0] : undefined;
+		if (stream && !followedLiveStreams.value.some((s) => s.user_id === streamerId)) {
+			followedLiveStreams.value = [...followedLiveStreams.value, stream];
+		}
+	}
+
+	async function untrackChannel(streamerId: string) {
+		trackedStreamers.value = trackedStreamers.value.filter((s) => s.id !== streamerId);
+		// Drop it from Live right away instead of waiting up to 30s for the next poll —
+		// unless the user has since followed it on Twitch, then it stays live as followed.
+		if (!followedAllStreams.value.some((s) => s.id === streamerId)) {
+			followedLiveStreams.value = followedLiveStreams.value.filter((s) => s.user_id !== streamerId);
+		}
+
+		await userSettinsStore.updateSettings({
+			trackedChannels: userSettinsStore.userSettingsState.trackedChannels.filter(
+				(id) => id !== streamerId
+			),
+		});
 	}
 
 	async function persistLiveStreams(streams: FollowData[]) {
@@ -362,11 +430,15 @@ export const useTwitchStore = defineStore('twitch', () => {
 		error,
 		followedLiveStreams,
 		followedAllStreams,
+		trackedStreamers,
+		trackedOnlyIds,
 		isAuthenticated,
 
 		loginWithTwitch,
 		logout,
 		init,
+		trackChannel,
+		untrackChannel,
 		fetchAllFollowedChannelsIds,
 		fetchDetailsAboutStreamers,
 	};
