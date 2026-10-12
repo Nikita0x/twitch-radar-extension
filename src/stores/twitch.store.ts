@@ -16,7 +16,7 @@ import { performOAuth } from '@/services/auth.service';
 import { syncSettings } from '@/services/cloudflare.service';
 import { useUserSettingsStore } from './user-settings.store';
 
-interface TwitchUser {
+interface User {
 	id: string;
 	created_at: string;
 	display_name: string;
@@ -62,7 +62,7 @@ export interface StreamersDetails {
 
 export const useTwitchStore = defineStore('twitch', () => {
 	const accessToken = ref<string | null>(null);
-	const user = ref<TwitchUser | null>(null);
+	const user = ref<User | null>(null);
 	const loading = ref(false);
 	const error = ref<string | null>(null);
 	const followedLiveStreams = ref<FollowData[]>([]);
@@ -81,8 +81,8 @@ export const useTwitchStore = defineStore('twitch', () => {
 		);
 	});
 
-	async function fetchUserProfile(token: string): Promise<Result<TwitchUser>> {
-		const result = await request<{ data: TwitchUser[] }>('https://api.twitch.tv/helix/users', {
+	async function fetchUserProfile(token: string): Promise<Result<User>> {
+		const result = await request<{ data: User[] }>('https://api.twitch.tv/helix/users', {
 			headers: {
 				'Client-ID': CLIENT_ID,
 				Authorization: `Bearer ${token}`,
