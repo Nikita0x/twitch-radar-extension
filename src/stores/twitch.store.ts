@@ -69,7 +69,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 	const followedAllStreams = ref<StreamersDetails[]>([]);
 	const trackedStreamers = ref<StreamersDetails[]>([]);
 
-	const userSettinsStore = useUserSettingsStore();
+	const userSettingsStore = useUserSettingsStore();
 
 	const isAuthenticated = computed(() => !!accessToken.value);
 
@@ -77,7 +77,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 	const trackedOnlyIds = computed(() => {
 		const followedIds = new Set(followedAllStreams.value.map((s) => s.id));
 		return new Set(
-			userSettinsStore.userSettingsState.trackedChannels.filter((id) => !followedIds.has(id))
+			userSettingsStore.userSettingsState.trackedChannels.filter((id) => !followedIds.has(id))
 		);
 	});
 
@@ -226,12 +226,12 @@ export const useTwitchStore = defineStore('twitch', () => {
 			});
 
 			await syncSettings(token);
-			await userSettinsStore.loadSettings();
+			await userSettingsStore.loadSettings();
 
 			const fetchFollowedLiveStreamsResult = await fetchLiveStreams(
 				token,
 				user.value.id,
-				userSettinsStore.userSettingsState.trackedChannels
+				userSettingsStore.userSettingsState.trackedChannels
 			);
 
 			if (!fetchFollowedLiveStreamsResult.ok) {
@@ -306,7 +306,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 				const fetchFollowedLiveStreamsResult = await fetchLiveStreams(
 					accessToken.value,
 					user.value.id,
-					userSettinsStore.userSettingsState.trackedChannels
+					userSettingsStore.userSettingsState.trackedChannels
 				);
 
 				if (!fetchFollowedLiveStreamsResult.ok) {
@@ -350,7 +350,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 	}
 
 	async function loadTrackedStreamers(token: string) {
-		const ids = userSettinsStore.userSettingsState.trackedChannels;
+		const ids = userSettingsStore.userSettingsState.trackedChannels;
 
 		if (ids.length === 0) {
 			trackedStreamers.value = [];
@@ -368,14 +368,14 @@ export const useTwitchStore = defineStore('twitch', () => {
 	async function trackChannel(streamerId: string) {
 		if (!accessToken.value) return;
 
-		const trackedChannels = userSettinsStore.userSettingsState.trackedChannels;
+		const trackedChannels = userSettingsStore.userSettingsState.trackedChannels;
 		if (trackedChannels.includes(streamerId)) return;
 
 		const result = await fetchDetailsAboutStreamers(accessToken.value, [streamerId]);
 		if (!result.ok || !result.data[0]) return;
 
 		trackedStreamers.value.push(result.data[0]);
-		await userSettinsStore.updateSettings({ trackedChannels: [...trackedChannels, streamerId] });
+		await userSettingsStore.updateSettings({ trackedChannels: [...trackedChannels, streamerId] });
 
 		// Show it in Live right away instead of waiting up to 30s for the background poll.
 		const streamResult = await fetchStreamsByUserIds(accessToken.value, [streamerId]);
@@ -393,8 +393,8 @@ export const useTwitchStore = defineStore('twitch', () => {
 			followedLiveStreams.value = followedLiveStreams.value.filter((s) => s.user_id !== streamerId);
 		}
 
-		await userSettinsStore.updateSettings({
-			trackedChannels: userSettinsStore.userSettingsState.trackedChannels.filter(
+		await userSettingsStore.updateSettings({
+			trackedChannels: userSettingsStore.userSettingsState.trackedChannels.filter(
 				(id) => id !== streamerId
 			),
 		});
