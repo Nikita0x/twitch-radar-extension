@@ -141,6 +141,7 @@ export async function getUserSettings(): Promise<UserSettings> {
     return { ...structuredClone(DEFAULT_USER_SETTINGS), ...result.userSettings };
 }
 
+/** Save user settings locally.*/
 export async function saveUserSettings(settings: UserSettings): Promise<void> {
     await browser.storage.local.set({ userSettings: toPlain(settings) });
 }

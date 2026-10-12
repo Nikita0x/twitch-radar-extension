@@ -34,13 +34,11 @@ const userSettingsStore = useUserSettingsStore();
 const navigationStore = useNavigationStore();
 const storageStore = useStorageStore();
 const changelogStore = useChangelogStore();
-const { followedLiveStreams, isAuthenticated } = storeToRefs(twitchStore);
+
 const { currentScreen } = storeToRefs(navigationStore);
-const { userSettingsState } = storeToRefs(userSettingsStore);
 
 onMounted(async () => {
 	await userSettingsStore.loadSettings();
-	userSettingsStore.applyTheme(userSettingsState.value.theme);
 	changelogStore.load();
 	await twitchStore.init();
 	await storageStore.load();

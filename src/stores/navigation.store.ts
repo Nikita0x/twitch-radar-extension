@@ -2,6 +2,10 @@ import type { StreamersDetails } from '@/stores/twitch.store';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
+/**
+ * This file is only responsible for navigation and screens.
+ */
+
 export type Tab = 'favorites' | 'following';
 export type Screen = Tab | 'settings' | 'streamer-settings' | 'changelog' | 'testing';
 

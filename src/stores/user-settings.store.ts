@@ -11,7 +11,6 @@ export const useUserSettingsStore = defineStore('user-settings', () => {
     async function loadSettings() {
         const settings = await getUserSettings();
         userSettingsState.value = settings;
-        applyTheme(settings.theme)
     }
 
     async function updateSettings(partialSettings: Partial<UserSettings>) {
@@ -31,7 +30,7 @@ export const useUserSettingsStore = defineStore('user-settings', () => {
 
     async function toggleTheme() {
         const newTheme = userSettingsState.value.theme === 'dark' ? 'light' : 'dark';
-        applyTheme(newTheme);
+        userSettingsState.value.theme = newTheme;
         await updateSettings({ theme: newTheme });
     }
 
@@ -40,9 +39,12 @@ export const useUserSettingsStore = defineStore('user-settings', () => {
         await updateSettings({ livePreviews: userSettingsState.value.livePreviews });
     }
 
-    function applyTheme(theme: 'light' | 'dark') {
-        document.documentElement.setAttribute('data-theme', theme);
-    }
+
+
+    watch(() => userSettingsState.value.theme, (newTheme) => {
+        document.documentElement.setAttribute('data-theme', newTheme);
+    },
+)
 
     return {
         userSettingsState,
@@ -50,7 +52,6 @@ export const useUserSettingsStore = defineStore('user-settings', () => {
         loadSettings,
         updateStreamerNotifications,
         toggleTheme,
-        applyTheme,
         toggleLivePreviews,
     };
 });
