@@ -51,7 +51,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, useTemplateRef, nextTick } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useTwitchStore, type StreamersDetails } from '@/stores/twitch.store.ts';
+import { useTwitchStore, type User } from '@/stores/twitch.store.ts';
 import { useUserSettingsStore } from '@/stores/user-settings.store.ts';
 import { useNavigationStore } from '@/stores/navigation.store.ts';
 import { hasActiveNotifications } from '@/utils/utils.ts';
@@ -80,7 +80,7 @@ const search = ref('');
 const searchRef = useTemplateRef('search-input');
 const scrollContainer = useTemplateRef('scrollContainer');
 
-function getPriority(streamer: StreamersDetails) {
+function getPriority(streamer: User) {
 	const isLive = liveStreamerIds.value.has(streamer.id);
 	const notificationsEnabled = hasActiveNotifications(userSettingsState.value, streamer.id);
 

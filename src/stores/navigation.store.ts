@@ -1,4 +1,4 @@
-import type { StreamersDetails } from '@/stores/twitch.store';
+import type { User } from '@/stores/twitch.store';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
@@ -14,7 +14,7 @@ export const useNavigationStore = defineStore('navigation', () => {
 	const previousScreen = ref<Screen | null>(null);
 	const scrollPositions = ref<Partial<Record<Screen, number>>>({});
 
-	const selectedStreamer = ref<StreamersDetails | null>(null);
+	const selectedStreamer = ref<User | null>(null);
 
 	const currentScreen = computed(() => stack.value[stack.value.length - 1]!);
 	const activeTab = computed(() => stack.value[0] as Tab);

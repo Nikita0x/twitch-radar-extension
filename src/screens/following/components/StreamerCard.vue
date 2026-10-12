@@ -83,7 +83,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { StreamersDetails } from '@/stores/twitch.store';
+import type { User } from '@/stores/twitch.store';
 import { useNavigationStore } from '@/stores/navigation.store';
 import { useTwitchStore } from '@/stores/twitch.store';
 import { useUserSettingsStore } from '@/stores/user-settings.store';
@@ -94,7 +94,7 @@ import { hasActiveNotifications } from '@/utils/utils';
 import StreamerTypeBadge from '@/components/StreamerTypeBadge.vue';
 
 interface Props {
-	streamer: StreamersDetails;
+	streamer: User;
 	tracked?: boolean;
 }
 
@@ -110,8 +110,8 @@ const { userSettingsState } = storeToRefs(userSettingsStore);
 const avatarLoaded = ref(false);
 const channelUrl = computed(() => `https://twitch.tv/${props.streamer.login}`);
 
-function openStreamerSettings(streamerDetails: StreamersDetails) {
-	selectedStreamer.value = streamerDetails;
+function openStreamerSettings(streamer: User) {
+	selectedStreamer.value = streamer;
 	navigationStore.navigateTo('streamer-settings');
 }
 

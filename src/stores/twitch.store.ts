@@ -16,7 +16,8 @@ import { performOAuth } from '@/services/auth.service';
 import { syncSettings } from '@/services/cloudflare.service';
 import { useUserSettingsStore } from './user-settings.store';
 
-interface User {
+/** Streamer and Viewer are both Users. */
+export interface User {
 	id: string;
 	created_at: string;
 	display_name: string;
@@ -47,27 +48,14 @@ export interface FollowData {
 	viewer_count: number;
 }
 
-export interface StreamersDetails {
-	broadcaster_type: string;
-	created_at: string;
-	description: string;
-	display_name: string;
-	id: string;
-	login: string;
-	offline_image_url: string;
-	profile_image_url: string;
-	type: string;
-	view_count: number;
-}
-
 export const useTwitchStore = defineStore('twitch', () => {
 	const accessToken = ref<string | null>(null);
 	const user = ref<User | null>(null);
 	const loading = ref(false);
 	const error = ref<string | null>(null);
 	const followedLiveStreams = ref<FollowData[]>([]);
-	const followedAllStreams = ref<StreamersDetails[]>([]);
-	const trackedStreamers = ref<StreamersDetails[]>([]);
+	const followedAllStreams = ref<User[]>([]);
+	const trackedStreamers = ref<User[]>([]);
 
 	const userSettingsStore = useUserSettingsStore();
 
@@ -157,27 +145,21 @@ export const useTwitchStore = defineStore('twitch', () => {
 		return ok(allIds);
 	}
 
-	async function fetchDetailsAboutStreamers(
-		token: string,
-		ids: string[]
-	): Promise<Result<StreamersDetails[]>> {
+	async function fetchDetailsAboutStreamers(token: string, ids: string[]): Promise<Result<User[]>> {
 		error.value = null;
 
-		const allDetails: StreamersDetails[] = [];
+		const allDetails: User[] = [];
 
 		for (let i = 0; i < ids.length; i += 100) {
 			const batch = ids.slice(i, i + 100);
 			const query = batch.map((id) => `id=${id}`).join('&');
 
-			const result = await request<{ data: StreamersDetails[] }>(
-				`https://api.twitch.tv/helix/users?${query}`,
-				{
-					headers: {
-						'Client-ID': CLIENT_ID,
-						Authorization: `Bearer ${token}`,
-					},
-				}
-			);
+			const result = await request<{ data: User[] }>(`https://api.twitch.tv/helix/users?${query}`, {
+				headers: {
+					'Client-ID': CLIENT_ID,
+					Authorization: `Bearer ${token}`,
+				},
+			});
 
 			if (!result.ok) {
 				console.error(result.error);
