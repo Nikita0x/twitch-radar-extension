@@ -82,36 +82,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 			await syncSettings(token);
 			await userSettingsStore.loadSettings();
 
-			const fetchFollowedLiveStreamsResult = await fetchLiveStreams(
-				token,
-				user.value.id,
-				userSettingsStore.userSettingsState.trackedChannels
-			);
-
-			if (!fetchFollowedLiveStreamsResult.ok) {
-				console.error(fetchFollowedLiveStreamsResult.error);
-				return fetchFollowedLiveStreamsResult;
-			}
-
-			followedLiveStreams.value = fetchFollowedLiveStreamsResult.data;
-			await persistLiveStreams(followedLiveStreams.value);
-
-			const idsResult = await fetchFollowedChannelsIds(token, user.value.id);
-
-			if (!idsResult.ok) {
-				console.error(idsResult.error);
-				return idsResult;
-			}
-
-			const fetchUsersByIdsResult = await fetchUsersByIds(token, idsResult.data);
-
-			if (!fetchUsersByIdsResult.ok) {
-				console.error(fetchUsersByIdsResult.error);
-				return fetchUsersByIdsResult;
-			}
-
-			followedAllStreams.value = fetchUsersByIdsResult.data;
-			await loadTrackedStreamers(token);
+			await loadStreamers(token, user.value.id);
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
 			if (message.includes('canceled') || message.includes('cancelled')) {
@@ -154,36 +125,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 
 				user.value = getUserProfileResult.data;
 
-				const fetchFollowedLiveStreamsResult = await fetchLiveStreams(
-					accessToken.value,
-					user.value.id,
-					userSettingsStore.userSettingsState.trackedChannels
-				);
-
-				if (!fetchFollowedLiveStreamsResult.ok) {
-					console.error(fetchFollowedLiveStreamsResult.error);
-					return fetchFollowedLiveStreamsResult;
-				}
-
-				followedLiveStreams.value = fetchFollowedLiveStreamsResult.data;
-				await persistLiveStreams(followedLiveStreams.value);
-
-				const idsResult = await fetchFollowedChannelsIds(accessToken.value, user.value.id);
-
-				if (!idsResult.ok) {
-					console.error(idsResult.error);
-					return idsResult;
-				}
-
-				const fetchUsersByIdsResult = await fetchUsersByIds(accessToken.value, idsResult.data);
-
-				if (!fetchUsersByIdsResult.ok) {
-					console.error(fetchUsersByIdsResult.error);
-					return fetchUsersByIdsResult;
-				}
-
-				followedAllStreams.value = fetchUsersByIdsResult.data;
-				await loadTrackedStreamers(accessToken.value);
+				await loadStreamers(auth.accessToken, user.value.id);
 			} else {
 				accessToken.value = null;
 				user.value = null;
@@ -195,6 +137,42 @@ export const useTwitchStore = defineStore('twitch', () => {
 		} finally {
 			loading.value = false;
 		}
+	}
+
+	// Shared tail of init() and loginWithTwitch(): everything that only needs a valid
+	// token + user ID. Profile fetch and settings sync stay in the callers, since
+	// login must sync settings (trackedChannels may come from the cloud) before this runs.
+	async function loadStreamers(token: string, userId: string) {
+		const fetchFollowedLiveStreamsResult = await fetchLiveStreams(
+			token,
+			userId,
+			userSettingsStore.userSettingsState.trackedChannels
+		);
+
+		if (!fetchFollowedLiveStreamsResult.ok) {
+			console.error(fetchFollowedLiveStreamsResult.error);
+			return fetchFollowedLiveStreamsResult;
+		}
+
+		followedLiveStreams.value = fetchFollowedLiveStreamsResult.data;
+		await persistLiveStreams(followedLiveStreams.value);
+
+		const idsResult = await fetchFollowedChannelsIds(token, userId);
+
+		if (!idsResult.ok) {
+			console.error(idsResult.error);
+			return idsResult;
+		}
+
+		const fetchUsersByIdsResult = await fetchUsersByIds(token, idsResult.data);
+
+		if (!fetchUsersByIdsResult.ok) {
+			console.error(fetchUsersByIdsResult.error);
+			return fetchUsersByIdsResult;
+		}
+
+		followedAllStreams.value = fetchUsersByIdsResult.data;
+		await loadTrackedStreamers(token);
 	}
 
 	async function loadTrackedStreamers(token: string) {
