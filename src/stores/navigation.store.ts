@@ -1,4 +1,4 @@
-import type { User } from '@/stores/twitch.store';
+import type { User } from '@/services/twitch-api';
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 

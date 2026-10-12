@@ -9,44 +9,19 @@ import {
 	type RuntimeState,
 } from '@/services/storage.service';
 import { setBadge } from '@/services/badge.service';
-import { fetchLiveStreams, fetchStreamsByUserIds } from '@/services/twitch-api';
+import {
+	fetchLiveStreams,
+	fetchStreamsByUserIds,
+	fetchUsersByIds,
+	fetchCurrentUser,
+	fetchFollowedChannelsIds,
+} from '@/services/twitch-api';
 import { CLIENT_ID } from '@/constants';
-import { request, type Result, ok, err } from '@/types/result';
 import { performOAuth } from '@/services/auth.service';
 import { syncSettings } from '@/services/cloudflare.service';
 import { useUserSettingsStore } from './user-settings.store';
-
-/** Streamer and Viewer are both Users. */
-export interface User {
-	id: string;
-	created_at: string;
-	display_name: string;
-	description: string;
-	broadcaster_type: string;
-	profile_image_url: string;
-	offline_image_url: string;
-	type: string;
-	login: string;
-	view_count: number;
-}
-
-export interface Stream {
-	id: string;
-	started_at: string;
-	title: string;
-	game_id: string;
-	game_name: string;
-	is_mature: boolean;
-	language: string;
-	tag_ids: [];
-	tags: string[];
-	thumbnail_url: string;
-	type: string;
-	user_id: string;
-	user_login: string;
-	user_name: string;
-	viewer_count: number;
-}
+import type { User, Stream } from '@/services/twitch-api';
+import type { StreamerId } from '@/stores/user-settings.store';
 
 export const useTwitchStore = defineStore('twitch', () => {
 	const accessToken = ref<string | null>(null);
@@ -69,109 +44,6 @@ export const useTwitchStore = defineStore('twitch', () => {
 		);
 	});
 
-	async function fetchUserProfile(token: string): Promise<Result<User>> {
-		const result = await request<{ data: User[] }>('https://api.twitch.tv/helix/users', {
-			headers: {
-				'Client-ID': CLIENT_ID,
-				Authorization: `Bearer ${token}`,
-			},
-		});
-
-		if (!result.ok) {
-			console.error(result.error.status);
-			return err(result.error);
-		}
-
-		const user = result.data.data[0];
-		if (!user) {
-			return { ok: false, error: { status: 0, message: 'User not found' } };
-		}
-
-		return ok(user);
-	}
-
-	async function fetchAllFollowedChannelsIds(token: string): Promise<Result<string[]>> {
-		error.value = null;
-
-		if (!user.value) {
-			const getUserProfileResult = await fetchUserProfile(token);
-
-			if (!getUserProfileResult.ok) {
-				console.error(getUserProfileResult.error);
-				return getUserProfileResult;
-			}
-
-			user.value = getUserProfileResult.data;
-		}
-
-		const allIds: string[] = [];
-		let cursor: string | undefined;
-
-		do {
-			const url = new URL('https://api.twitch.tv/helix/channels/followed');
-			url.searchParams.set('user_id', user.value.id);
-			url.searchParams.set('first', '100');
-			if (cursor) {
-				url.searchParams.set('after', cursor);
-			}
-
-			const result = await request<{
-				data: {
-					broadcaster_id: string;
-					broadcaster_login: string;
-					broadcaster_name: string;
-					followed_at: string;
-				}[];
-				pagination: {
-					cursor: string;
-				};
-				total: number;
-			}>(url.toString(), {
-				headers: {
-					'Client-ID': CLIENT_ID,
-					Authorization: `Bearer ${token}`,
-				},
-			});
-
-			if (!result.ok) {
-				console.error(result.error);
-				return result;
-			}
-
-			allIds.push(...result.data.data.map((item) => item.broadcaster_id));
-			cursor = result.data.pagination.cursor;
-		} while (cursor);
-
-		return ok(allIds);
-	}
-
-	async function fetchDetailsAboutStreamers(token: string, ids: string[]): Promise<Result<User[]>> {
-		error.value = null;
-
-		const allDetails: User[] = [];
-
-		for (let i = 0; i < ids.length; i += 100) {
-			const batch = ids.slice(i, i + 100);
-			const query = batch.map((id) => `id=${id}`).join('&');
-
-			const result = await request<{ data: User[] }>(`https://api.twitch.tv/helix/users?${query}`, {
-				headers: {
-					'Client-ID': CLIENT_ID,
-					Authorization: `Bearer ${token}`,
-				},
-			});
-
-			if (!result.ok) {
-				console.error(result.error);
-				return result;
-			}
-
-			allDetails.push(...result.data.data);
-		}
-
-		return ok(allDetails);
-	}
-
 	async function loginWithTwitch() {
 		loading.value = true;
 		error.value = null;
@@ -192,7 +64,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 
 			accessToken.value = token;
 
-			const getUserProfileResult = await fetchUserProfile(token);
+			const getUserProfileResult = await fetchCurrentUser(token);
 
 			if (!getUserProfileResult.ok) {
 				console.error(getUserProfileResult.error);
@@ -224,24 +96,21 @@ export const useTwitchStore = defineStore('twitch', () => {
 			followedLiveStreams.value = fetchFollowedLiveStreamsResult.data;
 			await persistLiveStreams(followedLiveStreams.value);
 
-			const idsResult = await fetchAllFollowedChannelsIds(token);
+			const idsResult = await fetchFollowedChannelsIds(token, user.value.id);
 
 			if (!idsResult.ok) {
 				console.error(idsResult.error);
 				return idsResult;
 			}
 
-			const fetchDetailsAboutStreamersResult = await fetchDetailsAboutStreamers(
-				token,
-				idsResult.data
-			);
+			const fetchUsersByIdsResult = await fetchUsersByIds(token, idsResult.data);
 
-			if (!fetchDetailsAboutStreamersResult.ok) {
-				console.error(fetchDetailsAboutStreamersResult.error);
-				return fetchDetailsAboutStreamersResult;
+			if (!fetchUsersByIdsResult.ok) {
+				console.error(fetchUsersByIdsResult.error);
+				return fetchUsersByIdsResult;
 			}
 
-			followedAllStreams.value = fetchDetailsAboutStreamersResult.data;
+			followedAllStreams.value = fetchUsersByIdsResult.data;
 			await loadTrackedStreamers(token);
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
@@ -276,7 +145,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 			if (auth.accessToken) {
 				accessToken.value = auth.accessToken;
 
-				const getUserProfileResult = await fetchUserProfile(accessToken.value);
+				const getUserProfileResult = await fetchCurrentUser(accessToken.value);
 
 				if (!getUserProfileResult.ok) {
 					console.error(getUserProfileResult.error);
@@ -299,24 +168,21 @@ export const useTwitchStore = defineStore('twitch', () => {
 				followedLiveStreams.value = fetchFollowedLiveStreamsResult.data;
 				await persistLiveStreams(followedLiveStreams.value);
 
-				const idsResult = await fetchAllFollowedChannelsIds(accessToken.value);
+				const idsResult = await fetchFollowedChannelsIds(accessToken.value, user.value.id);
 
 				if (!idsResult.ok) {
 					console.error(idsResult.error);
 					return idsResult;
 				}
 
-				const getDetailsAboutStreamersResult = await fetchDetailsAboutStreamers(
-					accessToken.value,
-					idsResult.data
-				);
+				const fetchUsersByIdsResult = await fetchUsersByIds(accessToken.value, idsResult.data);
 
-				if (!getDetailsAboutStreamersResult.ok) {
-					console.error(getDetailsAboutStreamersResult.error);
-					return getDetailsAboutStreamersResult;
+				if (!fetchUsersByIdsResult.ok) {
+					console.error(fetchUsersByIdsResult.error);
+					return fetchUsersByIdsResult;
 				}
 
-				followedAllStreams.value = getDetailsAboutStreamersResult.data;
+				followedAllStreams.value = fetchUsersByIdsResult.data;
 				await loadTrackedStreamers(accessToken.value);
 			} else {
 				accessToken.value = null;
@@ -339,7 +205,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 			return;
 		}
 
-		const result = await fetchDetailsAboutStreamers(token, ids);
+		const result = await fetchUsersByIds(token, ids);
 
 		// Tracked channels are an extra — a failure here must not break the Following tab.
 		if (result.ok) {
@@ -347,13 +213,13 @@ export const useTwitchStore = defineStore('twitch', () => {
 		}
 	}
 
-	async function trackChannel(streamerId: string) {
+	async function trackChannel(streamerId: StreamerId) {
 		if (!accessToken.value) return;
 
 		const trackedChannels = userSettingsStore.userSettingsState.trackedChannels;
 		if (trackedChannels.includes(streamerId)) return;
 
-		const result = await fetchDetailsAboutStreamers(accessToken.value, [streamerId]);
+		const result = await fetchUsersByIds(accessToken.value, [streamerId]);
 		if (!result.ok || !result.data[0]) return;
 
 		trackedStreamers.value.push(result.data[0]);
@@ -421,7 +287,5 @@ export const useTwitchStore = defineStore('twitch', () => {
 		init,
 		trackChannel,
 		untrackChannel,
-		fetchAllFollowedChannelsIds,
-		fetchDetailsAboutStreamers,
 	};
 });

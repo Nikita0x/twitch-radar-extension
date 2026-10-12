@@ -1,5 +1,5 @@
 import type { StreamerId } from '@/stores/user-settings.store';
-import type { Stream } from '@/stores/twitch.store';
+import type { Stream } from '@/services/twitch-api';
 
 // auth/userSettings/runtime are stored under independent top-level keys in
 // browser.storage.local (instead of one nested "storage" blob) so a write to

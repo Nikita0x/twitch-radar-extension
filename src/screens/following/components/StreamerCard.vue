@@ -83,7 +83,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import type { User } from '@/stores/twitch.store';
+import type { User } from '@/services/twitch-api';
 import { useNavigationStore } from '@/stores/navigation.store';
 import { useTwitchStore } from '@/stores/twitch.store';
 import { useUserSettingsStore } from '@/stores/user-settings.store';

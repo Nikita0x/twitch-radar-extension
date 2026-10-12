@@ -51,10 +51,11 @@
 <script setup lang="ts">
 import { ref, computed, watch, useTemplateRef, nextTick } from 'vue';
 import { storeToRefs } from 'pinia';
-import { useTwitchStore, type User } from '@/stores/twitch.store.ts';
+import { useTwitchStore } from '@/stores/twitch.store.ts';
 import { useUserSettingsStore } from '@/stores/user-settings.store.ts';
 import { useNavigationStore } from '@/stores/navigation.store.ts';
 import { hasActiveNotifications } from '@/utils/utils.ts';
+import type { User } from '@/services/twitch-api';
 
 import StreamerCard from '@/screens/following/components/StreamerCard.vue';
 import StreamerCardSkeleton from '@/screens/following/components/StreamerCardSkeleton.vue';

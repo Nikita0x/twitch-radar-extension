@@ -70,11 +70,11 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import type { Stream } from '@/stores/twitch.store';
 import { formatUptime, getPreview, isNewStream } from '@/utils/utils';
 import { NEW_STREAM_THRESHOLD_MINUTES } from '@/constants';
 import AnimatedViewCount from '@/components/AnimatedViewCount.vue';
 import { storeToRefs } from 'pinia';
+import type { Stream } from '@/services/twitch-api';
 
 import { useUserSettingsStore } from '@/stores/user-settings.store.ts';
 import { useStorageStore } from '@/stores/storage.store.ts';

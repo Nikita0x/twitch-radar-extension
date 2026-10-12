@@ -9,10 +9,9 @@ import {
 	type PreviousStream,
 	type StreamerNotifications,
 } from '@/services/storage.service';
-import { fetchLiveStreams } from '@/services/twitch-api';
+import { fetchLiveStreams, type Stream } from '@/services/twitch-api';
 import { putUserSettings } from '@/services/cloudflare.service';
 import { debounce } from '@/utils/utils';
-import type { Stream } from '@/stores/twitch.store';
 
 export default defineBackground(() => {
 	const NOTIFICATION_ICON_URL = browser.runtime.getURL(
