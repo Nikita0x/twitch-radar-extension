@@ -1,291 +1,317 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sorry to see you go — Twitch Radar</title>
-<style>
-	:root {
-		--bg: #ffffff;
-		--fg: #201c2b;
-		--muted: #6b6478;
-		--border: #e4e0eb;
-		--card-bg: #f5f3f9;
-		--accent: #772ce8;
-		--accent-fg: #ffffff;
-		--danger: #c0392b;
-	}
-	@media (prefers-color-scheme: dark) {
-		:root:not([data-theme="light"]) {
-			--bg: #16141c;
-			--fg: #f0eef5;
-			--muted: #b0abc0;
-			--border: #322e3d;
-			--card-bg: #211f29;
-			--accent: #a970ff;
-			--accent-fg: #16141c;
-			--danger: #ff8a75;
-		}
-	}
-	:root[data-theme="dark"] {
-		--bg: #16141c;
-		--fg: #f0eef5;
-		--muted: #b0abc0;
-		--border: #322e3d;
-		--card-bg: #211f29;
-		--accent: #a970ff;
-		--accent-fg: #16141c;
-		--danger: #ff8a75;
-	}
-	* { box-sizing: border-box; }
-	body {
-		margin: 0;
-		padding: 3rem 1.5rem;
-		background: var(--bg);
-		color: var(--fg);
-		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-		line-height: 1.55;
-		display: flex;
-		justify-content: center;
-	}
-	main {
-		max-width: 480px;
-		width: 100%;
-	}
-	h1 {
-		font-size: 1.4rem;
-		margin: 0 0 0.4rem;
-		text-wrap: balance;
-	}
-	.subtitle {
-		color: var(--muted);
-		font-size: 0.95rem;
-		margin: 0 0 1.75rem;
-	}
-	fieldset {
-		border: none;
-		padding: 0;
-		margin: 0 0 1.5rem;
-		display: flex;
-		flex-direction: column;
-		gap: 0.6rem;
-	}
-	legend {
-		font-size: 0.9rem;
-		font-weight: 600;
-		margin-bottom: 0.75rem;
-		padding: 0;
-	}
-	label.option {
-		display: flex;
-		align-items: flex-start;
-		gap: 0.65rem;
-		padding: 0.65rem 0.8rem;
-		border: 1px solid var(--border);
-		border-radius: 10px;
-		cursor: pointer;
-		font-size: 0.93rem;
-		background: var(--card-bg);
-	}
-	label.option input {
-		margin-top: 0.15rem;
-		accent-color: var(--accent);
-		flex-shrink: 0;
-	}
-	.detail-field {
-		display: none;
-		margin: -0.3rem 0 0 2.15rem;
-	}
-	.detail-field.visible {
-		display: block;
-	}
-	.field-block {
-		margin-bottom: 1.5rem;
-	}
-	.field-block > label {
-		display: block;
-		font-size: 0.9rem;
-		font-weight: 600;
-		margin-bottom: 0.5rem;
-	}
-	input[type="text"], textarea {
-		width: 100%;
-		font: inherit;
-		color: inherit;
-		background: var(--card-bg);
-		border: 1px solid var(--border);
-		border-radius: 8px;
-		padding: 0.6rem 0.7rem;
-		resize: vertical;
-	}
-	input[type="text"]:focus, textarea:focus, label.option:has(input:focus-visible) {
-		outline: 2px solid var(--accent);
-		outline-offset: 1px;
-	}
-	textarea { min-height: 5rem; }
-	.actions {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-		margin-top: 0.5rem;
-	}
-	button {
-		font: inherit;
-		font-weight: 600;
-		border: none;
-		border-radius: 8px;
-		padding: 0.7rem 1.4rem;
-		cursor: pointer;
-	}
-	button.primary {
-		background: var(--accent);
-		color: var(--accent-fg);
-	}
-	button.primary:disabled {
-		opacity: 0.6;
-		cursor: default;
-	}
-	a.skip {
-		color: var(--muted);
-		font-size: 0.9rem;
-		text-decoration: none;
-	}
-	a.skip:hover { text-decoration: underline; }
-	#error {
-		color: var(--danger);
-		font-size: 0.88rem;
-		margin-top: 0.75rem;
-		display: none;
-	}
-	#thanks {
-		display: none;
-	}
-	#thanks h1 { margin-bottom: 0.5rem; }
-</style>
-</head>
-<body>
-<main>
-	<form id="form">
-		<h1>Sorry to see you go</h1>
-		<p class="subtitle">Mind sharing why you removed Twitch Radar? It takes 30 seconds and helps me make it better.</p>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Sorry to see you go — Twitch Radar</title>
+		<style>
+			:root {
+				--bg: #ffffff;
+				--fg: #201c2b;
+				--muted: #6b6478;
+				--border: #e4e0eb;
+				--card-bg: #f5f3f9;
+				--accent: #772ce8;
+				--accent-fg: #ffffff;
+				--danger: #c0392b;
+			}
+			@media (prefers-color-scheme: dark) {
+				:root:not([data-theme='light']) {
+					--bg: #16141c;
+					--fg: #f0eef5;
+					--muted: #b0abc0;
+					--border: #322e3d;
+					--card-bg: #211f29;
+					--accent: #a970ff;
+					--accent-fg: #16141c;
+					--danger: #ff8a75;
+				}
+			}
+			:root[data-theme='dark'] {
+				--bg: #16141c;
+				--fg: #f0eef5;
+				--muted: #b0abc0;
+				--border: #322e3d;
+				--card-bg: #211f29;
+				--accent: #a970ff;
+				--accent-fg: #16141c;
+				--danger: #ff8a75;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				padding: 3rem 1.5rem;
+				background: var(--bg);
+				color: var(--fg);
+				font-family:
+					-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+				line-height: 1.55;
+				display: flex;
+				justify-content: center;
+			}
+			main {
+				max-width: 480px;
+				width: 100%;
+			}
+			h1 {
+				font-size: 1.4rem;
+				margin: 0 0 0.4rem;
+				text-wrap: balance;
+			}
+			.subtitle {
+				color: var(--muted);
+				font-size: 0.95rem;
+				margin: 0 0 1.75rem;
+			}
+			fieldset {
+				border: none;
+				padding: 0;
+				margin: 0 0 1.5rem;
+				display: flex;
+				flex-direction: column;
+				gap: 0.6rem;
+			}
+			legend {
+				font-size: 0.9rem;
+				font-weight: 600;
+				margin-bottom: 0.75rem;
+				padding: 0;
+			}
+			label.option {
+				display: flex;
+				align-items: flex-start;
+				gap: 0.65rem;
+				padding: 0.65rem 0.8rem;
+				border: 1px solid var(--border);
+				border-radius: 10px;
+				cursor: pointer;
+				font-size: 0.93rem;
+				background: var(--card-bg);
+			}
+			label.option input {
+				margin-top: 0.15rem;
+				accent-color: var(--accent);
+				flex-shrink: 0;
+			}
+			.detail-field {
+				display: none;
+				margin: -0.3rem 0 0 2.15rem;
+			}
+			.detail-field.visible {
+				display: block;
+			}
+			.field-block {
+				margin-bottom: 1.5rem;
+			}
+			.field-block > label {
+				display: block;
+				font-size: 0.9rem;
+				font-weight: 600;
+				margin-bottom: 0.5rem;
+			}
+			input[type='text'],
+			textarea {
+				width: 100%;
+				font: inherit;
+				color: inherit;
+				background: var(--card-bg);
+				border: 1px solid var(--border);
+				border-radius: 8px;
+				padding: 0.6rem 0.7rem;
+				resize: vertical;
+			}
+			input[type='text']:focus,
+			textarea:focus,
+			label.option:has(input:focus-visible) {
+				outline: 2px solid var(--accent);
+				outline-offset: 1px;
+			}
+			textarea {
+				min-height: 5rem;
+			}
+			.actions {
+				display: flex;
+				align-items: center;
+				gap: 1rem;
+				margin-top: 0.5rem;
+			}
+			button {
+				font: inherit;
+				font-weight: 600;
+				border: none;
+				border-radius: 8px;
+				padding: 0.7rem 1.4rem;
+				cursor: pointer;
+			}
+			button.primary {
+				background: var(--accent);
+				color: var(--accent-fg);
+			}
+			button.primary:disabled {
+				opacity: 0.6;
+				cursor: default;
+			}
+			a.skip {
+				color: var(--muted);
+				font-size: 0.9rem;
+				text-decoration: none;
+			}
+			a.skip:hover {
+				text-decoration: underline;
+			}
+			#error {
+				color: var(--danger);
+				font-size: 0.88rem;
+				margin-top: 0.75rem;
+				display: none;
+			}
+			#thanks {
+				display: none;
+			}
+			#thanks h1 {
+				margin-bottom: 0.5rem;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<form id="form">
+				<h1>Sorry to see you go</h1>
+				<p class="subtitle">
+					Mind sharing why you removed Twitch Radar? It takes 30 seconds and helps me make it
+					better.
+				</p>
 
-		<fieldset>
-			<legend>What led to this? (pick any that apply)</legend>
-			<label class="option">
-				<input type="checkbox" name="reason" value="better_alternative">
-				Found a better alternative
-			</label>
-			<label class="option">
-				<input type="checkbox" name="reason" value="too_many_notifications">
-				Too many or unwanted notifications
-			</label>
-			<label class="option">
-				<input type="checkbox" name="reason" value="bugs">
-				Didn't work as expected (bugs)
-			</label>
-			<label class="option">
-				<input type="checkbox" name="reason" value="missing_features" id="missing-features-checkbox">
-				Missing features I need
-			</label>
-			<div class="detail-field" id="missing-features-detail">
-				<input type="text" id="missing-features-input" placeholder="What were you looking for?">
+				<fieldset>
+					<legend>What led to this? (pick any that apply)</legend>
+					<label class="option">
+						<input type="checkbox" name="reason" value="better_alternative" />
+						Found a better alternative
+					</label>
+					<label class="option">
+						<input type="checkbox" name="reason" value="too_many_notifications" />
+						Too many or unwanted notifications
+					</label>
+					<label class="option">
+						<input type="checkbox" name="reason" value="bugs" />
+						Didn't work as expected (bugs)
+					</label>
+					<label class="option">
+						<input
+							type="checkbox"
+							name="reason"
+							value="missing_features"
+							id="missing-features-checkbox"
+						/>
+						Missing features I need
+					</label>
+					<div class="detail-field" id="missing-features-detail">
+						<input
+							type="text"
+							id="missing-features-input"
+							placeholder="What were you looking for?"
+						/>
+					</div>
+					<label class="option">
+						<input type="checkbox" name="reason" value="too_complicated" />
+						Too complicated to use
+					</label>
+					<label class="option">
+						<input type="checkbox" name="reason" value="privacy_concerns" />
+						Privacy concerns
+					</label>
+					<label class="option">
+						<input type="checkbox" name="reason" value="stopped_using_twitch" />
+						No longer use Twitch
+					</label>
+					<label class="option">
+						<input type="checkbox" name="reason" value="other" />
+						Other
+					</label>
+				</fieldset>
+
+				<div class="field-block">
+					<label for="comment">Anything else you'd like to add? (optional)</label>
+					<textarea id="comment" placeholder="Your feedback..."></textarea>
+				</div>
+
+				<div class="actions">
+					<button type="submit" class="primary" id="submit-btn">Send feedback</button>
+					<a href="#" class="skip" id="skip-link">No thanks, just close this</a>
+				</div>
+				<p id="error"></p>
+			</form>
+
+			<div id="thanks">
+				<h1>Thanks for the feedback 🙏</h1>
+				<p class="subtitle">This genuinely helps. You can close this tab now.</p>
 			</div>
-			<label class="option">
-				<input type="checkbox" name="reason" value="too_complicated">
-				Too complicated to use
-			</label>
-			<label class="option">
-				<input type="checkbox" name="reason" value="privacy_concerns">
-				Privacy concerns
-			</label>
-			<label class="option">
-				<input type="checkbox" name="reason" value="stopped_using_twitch">
-				No longer use Twitch
-			</label>
-			<label class="option">
-				<input type="checkbox" name="reason" value="other">
-				Other
-			</label>
-		</fieldset>
+		</main>
 
-		<div class="field-block">
-			<label for="comment">Anything else you'd like to add? (optional)</label>
-			<textarea id="comment" placeholder="Your feedback..."></textarea>
-		</div>
+		<script>
+			// Keep these values in sync with UNINSTALL_REASONS in shared/feedback.interface.ts —
+			// this is a static file with no build step, so it can't import that module directly.
+			const params = new URLSearchParams(location.search);
 
-		<div class="actions">
-			<button type="submit" class="primary" id="submit-btn">Send feedback</button>
-			<a href="#" class="skip" id="skip-link">No thanks, just close this</a>
-		</div>
-		<p id="error"></p>
-	</form>
+			const form = document.getElementById('form');
+			const thanks = document.getElementById('thanks');
+			const errorEl = document.getElementById('error');
+			const submitBtn = document.getElementById('submit-btn');
+			const skipLink = document.getElementById('skip-link');
+			const missingFeaturesCheckbox = document.getElementById('missing-features-checkbox');
+			const missingFeaturesDetail = document.getElementById('missing-features-detail');
+			const missingFeaturesInput = document.getElementById('missing-features-input');
 
-	<div id="thanks">
-		<h1>Thanks for the feedback 🙏</h1>
-		<p class="subtitle">This genuinely helps. You can close this tab now.</p>
-	</div>
-</main>
-
-<script>
-	// Keep these values in sync with UNINSTALL_REASONS in shared/feedback.interface.ts —
-	// this is a static file with no build step, so it can't import that module directly.
-	const params = new URLSearchParams(location.search);
-
-	const form = document.getElementById('form');
-	const thanks = document.getElementById('thanks');
-	const errorEl = document.getElementById('error');
-	const submitBtn = document.getElementById('submit-btn');
-	const skipLink = document.getElementById('skip-link');
-	const missingFeaturesCheckbox = document.getElementById('missing-features-checkbox');
-	const missingFeaturesDetail = document.getElementById('missing-features-detail');
-	const missingFeaturesInput = document.getElementById('missing-features-input');
-
-	missingFeaturesCheckbox.addEventListener('change', () => {
-		missingFeaturesDetail.classList.toggle('visible', missingFeaturesCheckbox.checked);
-		if (!missingFeaturesCheckbox.checked) missingFeaturesInput.value = '';
-	});
-
-	skipLink.addEventListener('click', (e) => {
-		e.preventDefault();
-		window.close();
-	});
-
-	form.addEventListener('submit', async (e) => {
-		e.preventDefault();
-		errorEl.style.display = 'none';
-		submitBtn.disabled = true;
-		submitBtn.textContent = 'Sending…';
-
-		const reasons = Array.from(form.querySelectorAll('input[name="reason"]:checked')).map((el) => el.value);
-
-		const feedback = {
-			reasons,
-			missingFeatureDetails: missingFeaturesInput.value.trim() || undefined,
-			comment: document.getElementById('comment').value.trim() || undefined,
-			manifestVersion: params.get('version') || 'unknown',
-			operatingSystem: params.get('os') || 'unknown',
-			extensionID: params.get('id') || 'unknown',
-			browserName: navigator.userAgent,
-		};
-
-		try {
-			const resp = await fetch('/feedback', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(feedback),
+			missingFeaturesCheckbox.addEventListener('change', () => {
+				missingFeaturesDetail.classList.toggle('visible', missingFeaturesCheckbox.checked);
+				if (!missingFeaturesCheckbox.checked) missingFeaturesInput.value = '';
 			});
 
-			if (!resp.ok) throw new Error('Request failed (' + resp.status + ')');
+			skipLink.addEventListener('click', (e) => {
+				e.preventDefault();
+				window.close();
+			});
 
-			form.style.display = 'none';
-			thanks.style.display = 'block';
-		} catch (err) {
-			errorEl.textContent = "Couldn't send feedback — please try again.";
-			errorEl.style.display = 'block';
-			submitBtn.disabled = false;
-			submitBtn.textContent = 'Send feedback';
-		}
-	});
-</script>
-</body>
+			form.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				errorEl.style.display = 'none';
+				submitBtn.disabled = true;
+				submitBtn.textContent = 'Sending…';
+
+				const reasons = Array.from(form.querySelectorAll('input[name="reason"]:checked')).map(
+					(el) => el.value
+				);
+
+				const feedback = {
+					reasons,
+					missingFeatureDetails: missingFeaturesInput.value.trim() || undefined,
+					comment: document.getElementById('comment').value.trim() || undefined,
+					manifestVersion: params.get('version') || 'unknown',
+					operatingSystem: params.get('os') || 'unknown',
+					extensionID: params.get('id') || 'unknown',
+					browserName: navigator.userAgent,
+				};
+
+				try {
+					const resp = await fetch('/feedback', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(feedback),
+					});
+
+					if (!resp.ok) throw new Error('Request failed (' + resp.status + ')');
+
+					form.style.display = 'none';
+					thanks.style.display = 'block';
+				} catch (err) {
+					errorEl.textContent = "Couldn't send feedback — please try again.";
+					errorEl.style.display = 'block';
+					submitBtn.disabled = false;
+					submitBtn.textContent = 'Send feedback';
+				}
+			});
+		</script>
+	</body>
 </html>

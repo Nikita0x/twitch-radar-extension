@@ -176,7 +176,6 @@ watch(inputRef, (input) => {
 	min-height: 120px;
 	position: relative;
 	overflow: auto;
-
 }
 
 .empty-state {

@@ -43,11 +43,10 @@ a {
 	display: flex;
 }
 
-
 italic {
-    font-style: italic;
+	font-style: italic;
 }
 
 bold {
-    font-weight: 700;
+	font-weight: 700;
 }

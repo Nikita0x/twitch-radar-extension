@@ -25,7 +25,7 @@
 
 	--color-notif-icon: #0f0f0f;
 	--color-notif-active: #ff8800;
-    --color-link: #1c7cd6;
+	--color-link: #1c7cd6;
 }
 
 /* ── Dark Theme ── */
@@ -55,8 +55,7 @@
 	--color-notif-icon: white;
 	--color-notif-active: #ff8800;
 
-    --color-link: #45a1ff;
-
+	--color-link: #45a1ff;
 }
 
 .custom-scrollbar {

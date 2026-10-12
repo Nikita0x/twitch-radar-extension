@@ -17,8 +17,8 @@ desktop notifications. Real users depend on it — **nothing may break**.
      lifecycle, storage limits, Twitch API limits, Cloudflare free tier).
   2. Propose 2–3 options with trade-offs and a recommendation.
   3. Wait for the owner to confirm the approach. Only then implement.
-- **Teach while doing:** explain *why* (patterns, browser APIs, pitfalls), not
-  just *what*. Point out problems in existing code when relevant.
+- **Teach while doing:** explain _why_ (patterns, browser APIs, pitfalls), not
+  just _what_. Point out problems in existing code when relevant.
 - **Keep the owner's skills sharp — call out blind vibe-coding.** The owner
   is afraid of losing programming skills to AI. When they start accepting code
   without reading it, delegating things they could write themselves, or

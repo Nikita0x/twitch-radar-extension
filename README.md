@@ -7,7 +7,7 @@ A fast, lightweight browser extension that tracks your followed Twitch streamers
 [<img src="src/public/firefox.png" alt="Firefox Add-ons store link" height="60px">](https://addons.mozilla.org/en-US/firefox/addon/twitch-radar-live-notifs/)
 [<img src="src/public/chrome.png" alt="Chrome Web Store link" height="60px">](https://chromewebstore.google.com/detail/fcjbgobfppjggabcbbnngehhefllbllm)
 
-## Features 
+## Features
 
 - 🔴 Instant desktop notifications when followed streamers go live
 - ⚙️ Per-streamer notification settings with customizable alerts and auto-open actions
@@ -47,7 +47,6 @@ npm run format           # format project with prettier
 Found a bug or have a feature request? [Open an issue](https://github.com/Nikita0x/chrome-extension/issues) on GitHub.
 
 > **Note (WIP):** in-app errors aren't surfaced to the user yet — they only go to the extension's console (`console.error`). Planned: a visible error banner that also prints `browser.runtime.id`, so a bug screenshot alone is enough to tell which build (dev vs. Chrome Web Store vs. Firefox) reported it. See `TODO.md`.
-
 
 ## Local development
 

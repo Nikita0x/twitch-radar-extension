@@ -1,5 +1,5 @@
-import { resolve } from "node:path";
-import { defineWorkersConfig } from "@cloudflare/vitest-pool-workers/config";
+import { resolve } from 'node:path';
+import { defineWorkersConfig } from '@cloudflare/vitest-pool-workers/config';
 
 export default defineWorkersConfig({
 	resolve: {
@@ -7,13 +7,13 @@ export default defineWorkersConfig({
 		// tsconfig.json, but Vitest's own Vite resolver doesn't — it needs the
 		// alias spelled out here too.
 		alias: {
-			"@shared": resolve(__dirname, "../shared"),
+			'@shared': resolve(__dirname, '../shared'),
 		},
 	},
 	test: {
 		poolOptions: {
 			workers: {
-				wrangler: { configPath: "./wrangler.jsonc" },
+				wrangler: { configPath: './wrangler.jsonc' },
 			},
 		},
 	},

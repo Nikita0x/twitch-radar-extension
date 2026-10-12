@@ -1,171 +1,269 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy Policy — Twitch Radar</title>
-<style>
-	:root {
-		--bg: #ffffff;
-		--fg: #201c2b;
-		--muted: #6b6478;
-		--border: #e4e0eb;
-		--code-bg: #f5f3f9;
-		--accent: #772ce8;
-	}
-	@media (prefers-color-scheme: dark) {
-		:root:not([data-theme="light"]) {
-			--bg: #16141c;
-			--fg: #f0eef5;
-			--muted: #b0abc0;
-			--border: #322e3d;
-			--code-bg: #211f29;
-			--accent: #a970ff;
-		}
-	}
-	:root[data-theme="dark"] {
-		--bg: #16141c;
-		--fg: #f0eef5;
-		--muted: #b0abc0;
-		--border: #322e3d;
-		--code-bg: #211f29;
-		--accent: #a970ff;
-	}
-	* { box-sizing: border-box; }
-	body {
-		margin: 0;
-		padding: 2.5rem 1.5rem 4rem;
-		background: var(--bg);
-		color: var(--fg);
-		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-		line-height: 1.6;
-	}
-	main {
-		max-width: 720px;
-		margin: 0 auto;
-	}
-	h1 {
-		font-size: 1.75rem;
-		margin-bottom: 0.25rem;
-	}
-	.updated {
-		color: var(--muted);
-		font-size: 0.9rem;
-		margin-bottom: 2rem;
-	}
-	h2 {
-		font-size: 1.15rem;
-		margin-top: 2.25rem;
-		padding-bottom: 0.4rem;
-		border-bottom: 1px solid var(--border);
-	}
-	p, li {
-		font-size: 0.97rem;
-	}
-	ul {
-		padding-left: 1.25rem;
-	}
-	li {
-		margin: 0.35rem 0;
-	}
-	code {
-		background: var(--code-bg);
-		padding: 0.1rem 0.35rem;
-		border-radius: 4px;
-		font-size: 0.88em;
-	}
-	table {
-		width: 100%;
-		border-collapse: collapse;
-		margin: 1rem 0;
-		font-size: 0.92rem;
-	}
-	th, td {
-		text-align: left;
-		padding: 0.55rem 0.6rem;
-		border-bottom: 1px solid var(--border);
-		vertical-align: top;
-	}
-	th {
-		color: var(--muted);
-		font-weight: 600;
-	}
-	.note {
-		background: var(--code-bg);
-		border-left: 3px solid var(--accent);
-		padding: 0.75rem 1rem;
-		border-radius: 6px;
-		font-size: 0.92rem;
-		margin: 1rem 0;
-	}
-	a { color: var(--accent); }
-</style>
-</head>
-<body>
-<main>
-	<h1>Privacy Policy — Twitch Radar</h1>
-	<p class="updated">Last updated: August 8, 2026</p>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Privacy Policy — Twitch Radar</title>
+		<style>
+			:root {
+				--bg: #ffffff;
+				--fg: #201c2b;
+				--muted: #6b6478;
+				--border: #e4e0eb;
+				--code-bg: #f5f3f9;
+				--accent: #772ce8;
+			}
+			@media (prefers-color-scheme: dark) {
+				:root:not([data-theme='light']) {
+					--bg: #16141c;
+					--fg: #f0eef5;
+					--muted: #b0abc0;
+					--border: #322e3d;
+					--code-bg: #211f29;
+					--accent: #a970ff;
+				}
+			}
+			:root[data-theme='dark'] {
+				--bg: #16141c;
+				--fg: #f0eef5;
+				--muted: #b0abc0;
+				--border: #322e3d;
+				--code-bg: #211f29;
+				--accent: #a970ff;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				padding: 2.5rem 1.5rem 4rem;
+				background: var(--bg);
+				color: var(--fg);
+				font-family:
+					-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+				line-height: 1.6;
+			}
+			main {
+				max-width: 720px;
+				margin: 0 auto;
+			}
+			h1 {
+				font-size: 1.75rem;
+				margin-bottom: 0.25rem;
+			}
+			.updated {
+				color: var(--muted);
+				font-size: 0.9rem;
+				margin-bottom: 2rem;
+			}
+			h2 {
+				font-size: 1.15rem;
+				margin-top: 2.25rem;
+				padding-bottom: 0.4rem;
+				border-bottom: 1px solid var(--border);
+			}
+			p,
+			li {
+				font-size: 0.97rem;
+			}
+			ul {
+				padding-left: 1.25rem;
+			}
+			li {
+				margin: 0.35rem 0;
+			}
+			code {
+				background: var(--code-bg);
+				padding: 0.1rem 0.35rem;
+				border-radius: 4px;
+				font-size: 0.88em;
+			}
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				margin: 1rem 0;
+				font-size: 0.92rem;
+			}
+			th,
+			td {
+				text-align: left;
+				padding: 0.55rem 0.6rem;
+				border-bottom: 1px solid var(--border);
+				vertical-align: top;
+			}
+			th {
+				color: var(--muted);
+				font-weight: 600;
+			}
+			.note {
+				background: var(--code-bg);
+				border-left: 3px solid var(--accent);
+				padding: 0.75rem 1rem;
+				border-radius: 6px;
+				font-size: 0.92rem;
+				margin: 1rem 0;
+			}
+			a {
+				color: var(--accent);
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1>Privacy Policy — Twitch Radar</h1>
+			<p class="updated">Last updated: August 8, 2026</p>
 
-	<p>Twitch Radar ("the extension") is a browser extension that shows desktop notifications when streamers you follow on Twitch go live. This page explains what data the extension accesses, what it stores, and what — if anything — ever leaves your device.</p>
+			<p>
+				Twitch Radar ("the extension") is a browser extension that shows desktop notifications when
+				streamers you follow on Twitch go live. This page explains what data the extension accesses,
+				what it stores, and what — if anything — ever leaves your device.
+			</p>
 
-	<h2>1. Twitch Account Access</h2>
-	<p>To show you notifications for streamers you follow, the extension asks you to sign in with Twitch using Twitch's own official login flow (OAuth). We request a single permission scope:</p>
-	<ul>
-		<li><code>user:read:follows</code> — read the list of channels you follow.</li>
-	</ul>
-	<p>We do <strong>not</strong> request access to your email address, chat messages, subscriptions, payment information, or any other Twitch data beyond your follow list and basic public profile info (username, display name, avatar) needed to show it in the extension's UI.</p>
-	<p>The access token Twitch gives us after login is stored only in your browser's local extension storage. All requests to Twitch's API are made directly from your browser to Twitch using that token — we never see or receive it ourselves. You can revoke this access at any time from <a href="https://www.twitch.tv/settings/connections" target="_blank" rel="noopener">twitch.tv/settings/connections</a>.</p>
+			<h2>1. Twitch Account Access</h2>
+			<p>
+				To show you notifications for streamers you follow, the extension asks you to sign in with
+				Twitch using Twitch's own official login flow (OAuth). We request a single permission scope:
+			</p>
+			<ul>
+				<li><code>user:read:follows</code> — read the list of channels you follow.</li>
+			</ul>
+			<p>
+				We do <strong>not</strong> request access to your email address, chat messages,
+				subscriptions, payment information, or any other Twitch data beyond your follow list and
+				basic public profile info (username, display name, avatar) needed to show it in the
+				extension's UI.
+			</p>
+			<p>
+				The access token Twitch gives us after login is stored only in your browser's local
+				extension storage. All requests to Twitch's API are made directly from your browser to
+				Twitch using that token — we never see or receive it ourselves. You can revoke this access
+				at any time from
+				<a href="https://www.twitch.tv/settings/connections" target="_blank" rel="noopener"
+					>twitch.tv/settings/connections</a
+				>.
+			</p>
 
-	<h2>2. Data Stored On Your Device</h2>
-	<p>The extension stores the following locally, using your browser's built-in extension storage. None of it is transmitted anywhere by us:</p>
-	<ul>
-		<li>Your Twitch auth token and login state</li>
-		<li>Your preferences (sort order, theme, notification rules per streamer)</li>
-		<li>A local cache of live-stream data, used to detect when a streamer goes live</li>
-	</ul>
-	<p>This data stays on your device and is removed when you uninstall the extension or clear its storage.</p>
+			<h2>2. Data Stored On Your Device</h2>
+			<p>
+				The extension stores the following locally, using your browser's built-in extension storage.
+				None of it is transmitted anywhere by us:
+			</p>
+			<ul>
+				<li>Your Twitch auth token and login state</li>
+				<li>Your preferences (sort order, theme, notification rules per streamer)</li>
+				<li>A local cache of live-stream data, used to detect when a streamer goes live</li>
+			</ul>
+			<p>
+				This data stays on your device and is removed when you uninstall the extension or clear its
+				storage.
+			</p>
 
-	<h2>3. Uninstall Feedback Form</h2>
-	<p>When you remove the extension, your browser automatically opens a new tab with a short feedback form asking why. This is a standard browser feature (not something the extension does after it's already removed), and submitting it is entirely optional — you can close the tab or click "No thanks" without sending anything.</p>
-	<p>If you do submit it, the following is sent to our backend and forwarded to us for review:</p>
-	<table>
-		<tr><th>Field</th><th>What it is</th></tr>
-		<tr><td>Reason(s)</td><td>Which checkboxes you selected (e.g. "found a better alternative", "too many notifications")</td></tr>
-		<tr><td>Missing feature details</td><td>Free text, only if you checked "Missing features I need"</td></tr>
-		<tr><td>Comment</td><td>Any additional free text you chose to add</td></tr>
-		<tr><td>Extension version</td><td>The installed version number</td></tr>
-		<tr><td>Operating system</td><td>e.g. Windows, macOS, Linux, ChromeOS</td></tr>
-		<tr><td>Browser info</td><td>Your browser's user-agent string</td></tr>
-		<tr><td>Extension ID</td><td>The installation identifier assigned by your browser</td></tr>
-	</table>
-	<p>This is technical/diagnostic information only — it does not include your name, email, Twitch account, or any identifiers tied to your Twitch data. It's used solely to understand feedback and fix bugs, and is not sold, shared with advertisers, or used for tracking.</p>
+			<h2>3. Uninstall Feedback Form</h2>
+			<p>
+				When you remove the extension, your browser automatically opens a new tab with a short
+				feedback form asking why. This is a standard browser feature (not something the extension
+				does after it's already removed), and submitting it is entirely optional — you can close the
+				tab or click "No thanks" without sending anything.
+			</p>
+			<p>
+				If you do submit it, the following is sent to our backend and forwarded to us for review:
+			</p>
+			<table>
+				<tr>
+					<th>Field</th>
+					<th>What it is</th>
+				</tr>
+				<tr>
+					<td>Reason(s)</td>
+					<td>
+						Which checkboxes you selected (e.g. "found a better alternative", "too many
+						notifications")
+					</td>
+				</tr>
+				<tr>
+					<td>Missing feature details</td>
+					<td>Free text, only if you checked "Missing features I need"</td>
+				</tr>
+				<tr>
+					<td>Comment</td>
+					<td>Any additional free text you chose to add</td>
+				</tr>
+				<tr>
+					<td>Extension version</td>
+					<td>The installed version number</td>
+				</tr>
+				<tr>
+					<td>Operating system</td>
+					<td>e.g. Windows, macOS, Linux, ChromeOS</td>
+				</tr>
+				<tr>
+					<td>Browser info</td>
+					<td>Your browser's user-agent string</td>
+				</tr>
+				<tr>
+					<td>Extension ID</td>
+					<td>The installation identifier assigned by your browser</td>
+				</tr>
+			</table>
+			<p>
+				This is technical/diagnostic information only — it does not include your name, email, Twitch
+				account, or any identifiers tied to your Twitch data. It's used solely to understand
+				feedback and fix bugs, and is not sold, shared with advertisers, or used for tracking.
+			</p>
 
-	<h2>4. What We Don't Do</h2>
-	<ul>
-		<li>No analytics or tracking SDKs</li>
-		<li>No advertising or ad targeting</li>
-		<li>No selling or sharing of your data with third parties</li>
-		<li>No collection of browsing history outside of Twitch.tv functionality</li>
-	</ul>
+			<h2>4. What We Don't Do</h2>
+			<ul>
+				<li>No analytics or tracking SDKs</li>
+				<li>No advertising or ad targeting</li>
+				<li>No selling or sharing of your data with third parties</li>
+				<li>No collection of browsing history outside of Twitch.tv functionality</li>
+			</ul>
 
-	<h2>5. Permissions the Extension Requests</h2>
-	<table>
-		<tr><th>Permission</th><th>Why it's needed</th></tr>
-		<tr><td><code>identity</code></td><td>To run the Twitch login (OAuth) flow</td></tr>
-		<tr><td><code>storage</code></td><td>To save your auth token, settings, and stream cache locally</td></tr>
-		<tr><td><code>notifications</code></td><td>To show a desktop notification when a followed streamer goes live</td></tr>
-		<tr><td><code>alarms</code></td><td>To periodically check Twitch for live status in the background</td></tr>
-		<tr><td>Host access to <code>api.twitch.tv</code></td><td>To fetch your follows and live-stream status directly from Twitch</td></tr>
-	</table>
+			<h2>5. Permissions the Extension Requests</h2>
+			<table>
+				<tr>
+					<th>Permission</th>
+					<th>Why it's needed</th>
+				</tr>
+				<tr>
+					<td><code>identity</code></td>
+					<td>To run the Twitch login (OAuth) flow</td>
+				</tr>
+				<tr>
+					<td><code>storage</code></td>
+					<td>To save your auth token, settings, and stream cache locally</td>
+				</tr>
+				<tr>
+					<td><code>notifications</code></td>
+					<td>To show a desktop notification when a followed streamer goes live</td>
+				</tr>
+				<tr>
+					<td><code>alarms</code></td>
+					<td>To periodically check Twitch for live status in the background</td>
+				</tr>
+				<tr>
+					<td>Host access to <code>api.twitch.tv</code></td>
+					<td>To fetch your follows and live-stream status directly from Twitch</td>
+				</tr>
+			</table>
 
-	<h2>6. Children's Privacy</h2>
-	<p>The extension is not directed at children and we do not knowingly collect data from anyone under the age required by Twitch's own terms of service.</p>
+			<h2>6. Children's Privacy</h2>
+			<p>
+				The extension is not directed at children and we do not knowingly collect data from anyone
+				under the age required by Twitch's own terms of service.
+			</p>
 
-	<h2>7. Changes to This Policy</h2>
-	<p>If this policy changes, the "Last updated" date at the top of this page will be updated accordingly.</p>
+			<h2>7. Changes to This Policy</h2>
+			<p>
+				If this policy changes, the "Last updated" date at the top of this page will be updated
+				accordingly.
+			</p>
 
-	<h2>8. Contact</h2>
-	<p>Questions about this policy or your data can be sent to <a href="mailto:klirmio21@gmail.com">klirmio21@gmail.com</a>.</p>
-</main>
-</body>
+			<h2>8. Contact</h2>
+			<p>
+				Questions about this policy or your data can be sent to
+				<a href="mailto:klirmio21@gmail.com">klirmio21@gmail.com</a>.
+			</p>
+		</main>
+	</body>
 </html>

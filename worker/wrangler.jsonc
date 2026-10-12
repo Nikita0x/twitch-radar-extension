@@ -8,12 +8,10 @@
 	"main": "src/index.ts",
 	"compatibility_date": "2026-08-07",
 	"observability": {
-		"enabled": true
+		"enabled": true,
 	},
 	"upload_source_maps": true,
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
+	"compatibility_flags": ["nodejs_compat"],
 	// Comma-separated Chrome extension IDs allowed to call this worker: the
 	// Chrome Web Store ID (production installs) and the local unpacked dev-install
 	// ID (npm run prod points a locally-built, unpacked extension at this same
@@ -23,14 +21,14 @@
 		"CHROME_EXTENSION_ID": "fcjbgobfppjggabcbbnngehhefllbllm,anejamjbmgpekamgljajekmgnbppnjao",
 		// Twitch app client ID (public, same as CLIENT_ID in src/constants.ts).
 		// /settings only accepts tokens issued to this app — see authenticate().
-		"TWITCH_CLIENT_ID": "cvem7bputjzs04pdh02g96bqb4wrj9"
+		"TWITCH_CLIENT_ID": "cvem7bputjzs04pdh02g96bqb4wrj9",
 	},
-    "d1_databases": [
-    {
-      "binding": "USER_SETTINGS",
-      "database_id": "b8ac67e2-91a3-401f-9677-1180160f2995"
-    }
-  ]
+	"d1_databases": [
+		{
+			"binding": "USER_SETTINGS",
+			"database_id": "b8ac67e2-91a3-401f-9677-1180160f2995",
+		},
+	],
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

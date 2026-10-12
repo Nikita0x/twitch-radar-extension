@@ -1,9 +1,11 @@
 # TODO
 
 ## Bugs
+
 - [ ] - None
 
 ## Features
+
 - [ ] - use Cloudflare's KV storage - for saving user's settings and preferencase (id-{settings..})
 - [ ] - Ability to send a message in chat [RESEARCH NEEDED]
 - [ ] - Opening muted tabs?

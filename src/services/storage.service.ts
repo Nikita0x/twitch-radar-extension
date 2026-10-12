@@ -9,163 +9,158 @@ import type { FollowData } from '@/stores/twitch.store';
 // the background alarm persisting runtime.liveStreams while the popup saved
 // userSettings), making the live streams list go blank until reopening.
 export interface StorageSchema {
-    auth: AuthState;
-    userSettings: UserSettings;
-    runtime: RuntimeState;
+	auth: AuthState;
+	userSettings: UserSettings;
+	runtime: RuntimeState;
 }
 
-
-
-
 export interface AuthState {
-    isAuthenticated: boolean;
-    accessToken: string;
-    userId: string;
+	isAuthenticated: boolean;
+	accessToken: string;
+	userId: string;
 }
 
 export interface RuntimeState {
-    previousStreams: Record<StreamerId, PreviousStream>;
-    liveStreams: FollowData[];
-    previewTick: number;
+	previousStreams: Record<StreamerId, PreviousStream>;
+	liveStreams: FollowData[];
+	previewTick: number;
 }
 
 export interface PreviousStream {
-    title: string;
-    category: string;
+	title: string;
+	category: string;
 }
 
 export interface StreamerNotifications {
-    /** When streamer goes `live`.*/
-    live: NotificationRule;
-    /** When `title` of the stream changes. */
-    titleChange: NotificationRule;
-    /** When `category` of the stream changes. */
-    categoryChange: CategoryChangeRule;
+	/** When streamer goes `live`.*/
+	live: NotificationRule;
+	/** When `title` of the stream changes. */
+	titleChange: NotificationRule;
+	/** When `category` of the stream changes. */
+	categoryChange: CategoryChangeRule;
 }
 
 interface NotificationRule {
-    enabled: boolean;
-    /**Automatically open new browser tab. */
-    autoOpen: boolean;
+	enabled: boolean;
+	/**Automatically open new browser tab. */
+	autoOpen: boolean;
 }
 
 interface CategoryChangeRule extends NotificationRule {
-    categories: string[];
+	categories: string[];
 }
 
 type Viewers = 'viewers:highToLow' | 'viewers:lowToHigh';
 type StreamDuration = 'duration:longest' | 'duration:shortest';
 export type Sort = Viewers | StreamDuration;
 export interface UserSettings {
-    sort: Sort;
-    theme: 'light' | 'dark';
-    livePreviews: boolean;
-    notifications: Record<StreamerId, StreamerNotifications>;
-    /** Channels polled for live status without the user following them on Twitch. */
-    trackedChannels: StreamerId[];
+	sort: Sort;
+	theme: 'light' | 'dark';
+	livePreviews: boolean;
+	notifications: Record<StreamerId, StreamerNotifications>;
+	/** Channels polled for live status without the user following them on Twitch. */
+	trackedChannels: StreamerId[];
 }
 
 export const DEFAULT_AUTH: AuthState = {
-    accessToken: '',
-    isAuthenticated: false,
-    userId: '',
+	accessToken: '',
+	isAuthenticated: false,
+	userId: '',
 };
 
 export const DEFAULT_USER_SETTINGS: UserSettings = {
-    notifications: {},
-    sort: 'viewers:highToLow',
-    theme: 'light',
-    livePreviews: false,
-    trackedChannels: [],
+	notifications: {},
+	sort: 'viewers:highToLow',
+	theme: 'light',
+	livePreviews: false,
+	trackedChannels: [],
 };
 
 export const DEFAULT_RUNTIME: RuntimeState = {
-    previousStreams: {},
-    liveStreams: [],
-    previewTick: 0,
+	previousStreams: {},
+	liveStreams: [],
+	previewTick: 0,
 };
 
 export const DEFAULT_STORAGE: StorageSchema = {
-    auth: DEFAULT_AUTH,
-    userSettings: DEFAULT_USER_SETTINGS,
-    runtime: DEFAULT_RUNTIME,
+	auth: DEFAULT_AUTH,
+	userSettings: DEFAULT_USER_SETTINGS,
+	runtime: DEFAULT_RUNTIME,
 };
 
 export const DEFAULT_NOTIFICATION_SETTINGS: StreamerNotifications = {
-    live: {
-        enabled: false,
-        autoOpen: false,
-    },
-    titleChange: {
-        enabled: false,
-        autoOpen: false,
-    },
-    categoryChange: {
-        enabled: false,
-        autoOpen: false,
-        categories: [],
-    },
+	live: {
+		enabled: false,
+		autoOpen: false,
+	},
+	titleChange: {
+		enabled: false,
+		autoOpen: false,
+	},
+	categoryChange: {
+		enabled: false,
+		autoOpen: false,
+		categories: [],
+	},
 };
 
 export function getStreamerNotifications(
-    settings: UserSettings,
-    streamerId: StreamerId
+	settings: UserSettings,
+	streamerId: StreamerId
 ): StreamerNotifications {
-    return settings.notifications[streamerId] ?? structuredClone(DEFAULT_NOTIFICATION_SETTINGS);
+	return settings.notifications[streamerId] ?? structuredClone(DEFAULT_NOTIFICATION_SETTINGS);
 }
 
 // Firefox's storage.local uses structured clone and rejects Vue/Pinia reactive
 // proxies outright; Chrome tolerates them. Strip reactivity by round-tripping
 // through JSON — storage.local only ever holds plain JSON-safe data anyway.
 function toPlain<T>(value: T): T {
-    return JSON.parse(JSON.stringify(value));
+	return JSON.parse(JSON.stringify(value));
 }
 
-
-
 export async function getAuth(): Promise<AuthState> {
-    const result = (await browser.storage.local.get('auth')) as { auth?: AuthState };
-    return result.auth ?? structuredClone(DEFAULT_AUTH);
+	const result = (await browser.storage.local.get('auth')) as { auth?: AuthState };
+	return result.auth ?? structuredClone(DEFAULT_AUTH);
 }
 
 export async function saveAuth(auth: AuthState): Promise<void> {
-    await browser.storage.local.set({ auth: toPlain(auth) });
+	await browser.storage.local.set({ auth: toPlain(auth) });
 }
 
 export async function getUserSettings(): Promise<UserSettings> {
-    const result = (await browser.storage.local.get('userSettings')) as {
-        userSettings?: UserSettings;
-    };
-    // Spread over defaults so settings saved by an older version (or pulled from
-    // the cloud) get fields added since then, e.g. trackedChannels.
-    return { ...structuredClone(DEFAULT_USER_SETTINGS), ...result.userSettings };
+	const result = (await browser.storage.local.get('userSettings')) as {
+		userSettings?: UserSettings;
+	};
+	// Spread over defaults so settings saved by an older version (or pulled from
+	// the cloud) get fields added since then, e.g. trackedChannels.
+	return { ...structuredClone(DEFAULT_USER_SETTINGS), ...result.userSettings };
 }
 
 /** Save user settings locally.*/
 export async function saveUserSettings(settings: UserSettings): Promise<void> {
-    await browser.storage.local.set({ userSettings: toPlain(settings) });
+	await browser.storage.local.set({ userSettings: toPlain(settings) });
 }
 
 export async function getRuntime(): Promise<RuntimeState> {
-    const result = (await browser.storage.local.get('runtime')) as { runtime?: RuntimeState };
-    return result.runtime ?? structuredClone(DEFAULT_RUNTIME);
+	const result = (await browser.storage.local.get('runtime')) as { runtime?: RuntimeState };
+	return result.runtime ?? structuredClone(DEFAULT_RUNTIME);
 }
 
 export async function saveRuntime(runtime: RuntimeState): Promise<void> {
-    await browser.storage.local.set({ runtime: toPlain(runtime) });
+	await browser.storage.local.set({ runtime: toPlain(runtime) });
 }
 
 // Its own key (not inside runtime) because the background alarm overwrites the
 // whole runtime object every 30s and would clobber a write made by the popup.
 export async function getLastSeenChangelogVersion(): Promise<string | null> {
-    const result = (await browser.storage.local.get('lastSeenChangelogVersion')) as {
-        lastSeenChangelogVersion?: string;
-    };
-    return result.lastSeenChangelogVersion ?? null;
+	const result = (await browser.storage.local.get('lastSeenChangelogVersion')) as {
+		lastSeenChangelogVersion?: string;
+	};
+	return result.lastSeenChangelogVersion ?? null;
 }
 
 export async function saveLastSeenChangelogVersion(version: string): Promise<void> {
-    await browser.storage.local.set({ lastSeenChangelogVersion: version });
+	await browser.storage.local.set({ lastSeenChangelogVersion: version });
 }
 
 /**
@@ -175,11 +170,11 @@ export async function saveLastSeenChangelogVersion(version: string): Promise<voi
  * is lost.
  */
 export async function getStorage(): Promise<StorageSchema> {
-    const [auth, userSettings, runtime] = await Promise.all([
-        getAuth(),
-        getUserSettings(),
-        getRuntime(),
-    ]);
+	const [auth, userSettings, runtime] = await Promise.all([
+		getAuth(),
+		getUserSettings(),
+		getRuntime(),
+	]);
 
-    return { auth, userSettings, runtime };
+	return { auth, userSettings, runtime };
 }
