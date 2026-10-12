@@ -30,17 +30,17 @@ export interface User {
 	view_count: number;
 }
 
-export interface FollowData {
+export interface Stream {
+	id: string;
+	started_at: string;
+	title: string;
 	game_id: string;
 	game_name: string;
-	id: string;
 	is_mature: boolean;
 	language: string;
-	started_at: string;
 	tag_ids: [];
 	tags: string[];
 	thumbnail_url: string;
-	title: string;
 	type: string;
 	user_id: string;
 	user_login: string;
@@ -53,7 +53,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 	const user = ref<User | null>(null);
 	const loading = ref(false);
 	const error = ref<string | null>(null);
-	const followedLiveStreams = ref<FollowData[]>([]);
+	const followedLiveStreams = ref<Stream[]>([]);
 	const followedAllStreams = ref<User[]>([]);
 	const trackedStreamers = ref<User[]>([]);
 
@@ -382,7 +382,7 @@ export const useTwitchStore = defineStore('twitch', () => {
 		});
 	}
 
-	async function persistLiveStreams(streams: FollowData[]) {
+	async function persistLiveStreams(streams: Stream[]) {
 		const runtime = await getRuntime();
 		runtime.liveStreams = streams;
 		await saveRuntime(runtime);

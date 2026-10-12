@@ -1,12 +1,12 @@
 import { CLIENT_ID } from '@/constants';
-import type { FollowData } from '@/stores/twitch.store';
+import type { Stream } from '@/stores/twitch.store';
 import { request, type Result, ok, type Response } from '@/types/result';
 
 export async function fetchFollowedLiveStreams(
 	token: string,
 	userId: string
-): Promise<Result<FollowData[]>> {
-	const allStreams: FollowData[] = [];
+): Promise<Result<Stream[]>> {
+	const allStreams: Stream[] = [];
 	let cursor: string | undefined;
 
 	do {
@@ -17,7 +17,7 @@ export async function fetchFollowedLiveStreams(
 			url.searchParams.set('after', cursor);
 		}
 
-		const result = await request<Response<FollowData[]>>(url.toString(), {
+		const result = await request<Response<Stream[]>>(url.toString(), {
 			headers: {
 				'Client-ID': CLIENT_ID,
 				Authorization: `Bearer ${token}`,
@@ -41,8 +41,8 @@ export async function fetchFollowedLiveStreams(
 export async function fetchStreamsByUserIds(
 	token: string,
 	userIds: string[]
-): Promise<Result<FollowData[]>> {
-	const allStreams: FollowData[] = [];
+): Promise<Result<Stream[]>> {
+	const allStreams: Stream[] = [];
 
 	for (let i = 0; i < userIds.length; i += 100) {
 		const url = new URL('https://api.twitch.tv/helix/streams');
@@ -51,7 +51,7 @@ export async function fetchStreamsByUserIds(
 			url.searchParams.append('user_id', id);
 		}
 
-		const result = await request<Response<FollowData[]>>(url.toString(), {
+		const result = await request<Response<Stream[]>>(url.toString(), {
 			headers: {
 				'Client-ID': CLIENT_ID,
 				Authorization: `Bearer ${token}`,
@@ -74,7 +74,7 @@ export async function fetchLiveStreams(
 	token: string,
 	userId: string,
 	trackedIds: string[]
-): Promise<Result<FollowData[]>> {
+): Promise<Result<Stream[]>> {
 	const followedResult = await fetchFollowedLiveStreams(token, userId);
 	if (!followedResult.ok) return followedResult;
 

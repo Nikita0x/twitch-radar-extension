@@ -12,7 +12,7 @@ import {
 import { fetchLiveStreams } from '@/services/twitch-api';
 import { putUserSettings } from '@/services/cloudflare.service';
 import { debounce } from '@/utils/utils';
-import type { FollowData } from '@/stores/twitch.store';
+import type { Stream } from '@/stores/twitch.store';
 
 export default defineBackground(() => {
 	const NOTIFICATION_ICON_URL = browser.runtime.getURL(
@@ -223,7 +223,7 @@ export default defineBackground(() => {
 		await saveRuntime(storage.runtime);
 	});
 
-	async function sendNotification(stream: FollowData, title: string, message: string) {
+	async function sendNotification(stream: Stream, title: string, message: string) {
 		try {
 			await browser.notifications.create(stream.user_login, {
 				type: 'basic',
@@ -249,7 +249,7 @@ export default defineBackground(() => {
 	}
 
 	async function checkLiveNotification(
-		stream: FollowData,
+		stream: Stream,
 		previous: PreviousStream | undefined,
 		settings: StreamerNotifications
 	) {
@@ -269,7 +269,7 @@ export default defineBackground(() => {
 		}
 	}
 	async function checkTitleNotification(
-		stream: FollowData,
+		stream: Stream,
 		previous: PreviousStream | undefined,
 		settings: StreamerNotifications
 	) {
@@ -291,7 +291,7 @@ export default defineBackground(() => {
 	}
 
 	async function checkCategoryNotification(
-		stream: FollowData,
+		stream: Stream,
 		previous: PreviousStream | undefined,
 		settings: StreamerNotifications
 	) {

@@ -1,5 +1,5 @@
 import type { StreamerId } from '@/stores/user-settings.store';
-import type { FollowData } from '@/stores/twitch.store';
+import type { Stream } from '@/stores/twitch.store';
 
 // auth/userSettings/runtime are stored under independent top-level keys in
 // browser.storage.local (instead of one nested "storage" blob) so a write to
@@ -22,7 +22,7 @@ export interface AuthState {
 
 export interface RuntimeState {
 	previousStreams: Record<StreamerId, PreviousStream>;
-	liveStreams: FollowData[];
+	liveStreams: Stream[];
 	previewTick: number;
 }
 

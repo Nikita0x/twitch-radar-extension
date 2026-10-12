@@ -70,7 +70,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import type { FollowData } from '@/stores/twitch.store';
+import type { Stream } from '@/stores/twitch.store';
 import { formatUptime, getPreview, isNewStream } from '@/utils/utils';
 import { NEW_STREAM_THRESHOLD_MINUTES } from '@/constants';
 import AnimatedViewCount from '@/components/AnimatedViewCount.vue';
@@ -81,7 +81,7 @@ import { useStorageStore } from '@/stores/storage.store.ts';
 import { useTwitchStore } from '@/stores/twitch.store.ts';
 
 interface Props {
-	stream: FollowData;
+	stream: Stream;
 }
 
 const props = defineProps<Props>();
